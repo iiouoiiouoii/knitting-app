@@ -1,6 +1,6 @@
 /* 뜨개 노트 서비스 워커: 앱과 PDF 뷰어를 기기에 저장해 인터넷 없이도 열리게 해요.
    앱 파일을 고치면 아래 VERSION 숫자를 올려 주세요. */
-const VERSION = 'v1';
+const VERSION = 'v4';
 const APP = 'knit-app-' + VERSION;
 const CDN = 'knit-cdn-v1';
 const APP_FILES = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png'];
@@ -46,7 +46,7 @@ self.addEventListener('fetch', e => {
 
   /* PDF.js·글꼴 등 외부 파일: 저장본 먼저, 없으면 받아서 저장 */
   if(url.origin !== location.origin){
-    if(!/cdnjs\.cloudflare\.com|fonts\.(googleapis|gstatic)\.com/.test(url.host)) return;
+    if(!/cdnjs\.cloudflare\.com|fonts\.(googleapis|gstatic)\.com|cdn\.jsdelivr\.net|hangeul\.pstatic\.net/.test(url.host)) return;
     e.respondWith((async () => {
       const hit = await caches.match(req); if(hit) return hit;
       try{
