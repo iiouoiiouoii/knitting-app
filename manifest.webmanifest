@@ -1,0 +1,17 @@
+{
+  "name": "뜨개 노트",
+  "short_name": "뜨개 노트",
+  "description": "뜨개 프로젝트, 도안, 게이지, 실·바늘을 기록하는 앱",
+  "lang": "ko",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#faf6f1",
+  "theme_color": "#c8553d",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,1845 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#c8553d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="뜨개 노트">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>뜨개 노트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#faf6f1; --surface:#ffffff; --surface-2:#f3ede5; --border:#e6ddd1;
+  --text:#2d2621; --muted:#7a6e64; --accent:#c8553d; --accent-soft:#f6e1da; --accent-text:#fff;
+  --green:#4f8a5b; --green-soft:#e0eee2; --blue:#3d6fa8; --blue-soft:#dfe9f5;
+  --amber:#b7791f; --amber-soft:#f8ecd5; --gray-soft:#ece8e3;
+  --shadow:0 1px 2px rgba(60,40,20,.06),0 4px 16px rgba(60,40,20,.06);
+  --radius:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1c1917; --surface:#262220; --surface-2:#302b28; --border:#3d3632;
+    --text:#f1ebe5; --muted:#a89d93; --accent:#e5775f; --accent-soft:#4a2c25; --accent-text:#1c1917;
+    --green:#7fbf8b; --green-soft:#24372a; --blue:#86b0e0; --blue-soft:#22303f;
+    --amber:#e4b25c; --amber-soft:#3d3020; --gray-soft:#34302d;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1c1917; --surface:#262220; --surface-2:#302b28; --border:#3d3632;
+  --text:#f1ebe5; --muted:#a89d93; --accent:#e5775f; --accent-soft:#4a2c25; --accent-text:#1c1917;
+  --green:#7fbf8b; --green-soft:#24372a; --blue:#86b0e0; --blue-soft:#22303f;
+  --amber:#e4b25c; --amber-soft:#3d3020; --gray-soft:#34302d;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:"Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:15px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+.app{display:flex;min-height:100vh}
+/* sidebar (desktop) */
+.side{width:220px;flex-shrink:0;padding:20px 12px;border-right:1px solid var(--border);position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px;background:var(--surface)}
+.brand{font-weight:700;font-size:19px;padding:6px 12px 18px;display:flex;align-items:center;gap:8px}
+.nav-btn{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:0;background:none;cursor:pointer;text-align:left;color:var(--muted);font-weight:500;text-decoration:none}
+.nav-btn:hover{background:var(--surface-2);color:var(--text)}
+.nav-btn.active{background:var(--accent-soft);color:var(--accent)}
+.nav-btn .ico{font-size:18px;width:22px;text-align:center}
+.side .spacer{flex:1}
+main{flex:1;min-width:0;padding:28px 32px 100px;max-width:1100px}
+.topbar{display:none}
+.bottom{display:none}
+@media (max-width:820px){
+  .side{display:none}
+  main{padding:12px 16px 110px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+  .topbar .brand{padding:0;font-size:17px}
+  .bottom{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--surface);border-top:1px solid var(--border);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  .bottom .nav-btn{flex:1;flex-direction:column;gap:2px;font-size:11px;padding:6px 2px;align-items:center}
+  .bottom .nav-btn .ico{font-size:20px}
+}
+.icon-btn{border:0;background:none;font-size:20px;cursor:pointer;padding:6px;border-radius:8px}
+.icon-btn:hover{background:var(--surface-2)}
+/* common */
+h1{font-size:24px;margin:4px 0 4px}
+h2{font-size:17px;margin:0 0 12px}
+.sub{color:var(--muted);margin:0 0 20px;font-size:14px}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--border);background:var(--surface);padding:9px 16px;border-radius:10px;cursor:pointer;font-weight:500;white-space:nowrap}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-text)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.danger{color:#c0392b}
+.btn.sm{padding:6px 11px;font-size:13px;border-radius:8px}
+.btn.ghost{border-color:transparent;background:none}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.grid{display:grid;gap:14px}
+.grid.cols-2{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.grid.cols-3{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+@media (max-width:820px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;text-decoration:none;color:inherit;display:block}
+.stat:hover{border-color:var(--accent)}
+.stat .n{font-size:26px;font-weight:700}
+.stat .l{color:var(--muted);font-size:13px}
+.section{margin-bottom:26px}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.section-head h2{margin:0}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0 16px}
+.search{flex:1;min-width:180px;padding:9px 12px 9px 34px;border:1px solid var(--border);border-radius:10px;background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23958a80' stroke-width='2' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 11px center}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--border);background:var(--surface);padding:6px 12px;border-radius:999px;cursor:pointer;font-size:13px;color:var(--muted)}
+.chip.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:500;background:var(--gray-soft);color:var(--muted)}
+.tag.s-active{background:var(--accent-soft);color:var(--accent)}
+.tag.s-done{background:var(--green-soft);color:var(--green)}
+.tag.s-plan{background:var(--blue-soft);color:var(--blue)}
+.tag.s-hold{background:var(--amber-soft);color:var(--amber)}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+/* project card */
+.pcard{display:flex;flex-direction:column;padding:0;overflow:hidden;cursor:pointer;text-decoration:none;color:inherit;transition:transform .12s,border-color .12s}
+.pcard:hover{border-color:var(--accent);transform:translateY(-1px)}
+.pthumb{height:130px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:44px;overflow:hidden}
+.pthumb img{width:100%;height:100%;object-fit:cover}
+.pbody{padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.pbody .t{font-weight:700;font-size:16px}
+.bar{height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.bar > i{display:block;height:100%;background:var(--accent);border-radius:99px}
+/* list items */
+.item{display:flex;gap:14px;align-items:center;padding:14px 16px}
+.item + .item{border-top:1px solid var(--border)}
+.list{padding:0}
+.swatch{width:42px;height:42px;border-radius:10px;flex-shrink:0;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px}
+.item .main{flex:1;min-width:0}
+.item .t{font-weight:600}
+.item .meta{color:var(--muted);font-size:13px;display:flex;gap:4px 12px;flex-wrap:wrap}
+.item .acts{display:flex;gap:4px}
+.empty{text-align:center;padding:44px 20px;color:var(--muted)}
+.empty .big{font-size:44px;margin-bottom:6px}
+.empty p{margin:4px 0 16px}
+/* segmented */
+.seg{display:inline-flex;background:var(--surface-2);padding:4px;border-radius:12px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:none;padding:8px 14px;border-radius:9px;cursor:pointer;color:var(--muted);font-weight:500}
+.seg button.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+/* forms */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field.full{grid-column:1/-1}
+.field label{font-size:13px;font-weight:500;color:var(--muted)}
+.field .hint{font-size:12px;color:var(--muted)}
+input[type=text],input[type=number],input[type=date],input[type=search],select,textarea{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:10px;background:var(--surface);outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+textarea{min-height:80px;resize:vertical}
+input[type=color]{width:100%;height:40px;border:1px solid var(--border);border-radius:10px;background:var(--surface);padding:3px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+@media (max-width:560px){.form-grid{grid-template-columns:1fr}}
+.checklist{display:flex;flex-direction:column;gap:6px;max-height:180px;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:8px 10px}
+.checklist label{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--text);font-weight:400}
+.yuse{display:flex;gap:6px;margin-bottom:6px}
+.yuse select{flex:1}
+.yuse input{width:90px}
+/* dialog */
+dialog{border:0;border-radius:18px;padding:0;width:min(620px,calc(100vw - 24px));max-height:calc(100vh - 40px);background:var(--surface);color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(20,15,10,.45)}
+.dlg-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:1}
+.dlg-head h2{margin:0}
+.dlg-body{padding:18px 20px}
+.dlg-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--surface)}
+/* calc */
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:820px){.calc-grid{grid-template-columns:1fr}}
+.result{background:var(--accent-soft);border-radius:var(--radius);padding:16px 18px}
+.result .big{font-size:30px;font-weight:700;color:var(--accent);line-height:1.2}
+.result .lbl{font-size:13px;color:var(--muted)}
+.result-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.explain{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.6}
+.inline-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* counter */
+.counters{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.counter{text-align:center;padding:16px}
+.counter .name{font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.counter .val{font-size:52px;font-weight:700;line-height:1.1;margin:8px 0 4px;font-variant-numeric:tabular-nums}
+.counter .ctrl{display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-top:10px}
+.counter .ctrl button{border:0;border-radius:12px;padding:14px;font-size:22px;font-weight:700;cursor:pointer;background:var(--surface-2)}
+.counter .ctrl button.plus{background:var(--accent);color:var(--accent-text)}
+.counter .ctrl button:active{transform:scale(.97)}
+.counter .rep{font-size:13px;color:var(--muted)}
+.detail-hero{display:grid;grid-template-columns:260px 1fr;gap:20px;margin-bottom:20px}
+@media (max-width:820px){.detail-hero{grid-template-columns:1fr}}
+.hero-img{aspect-ratio:1;background:var(--surface-2);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:72px;overflow:hidden}
+.hero-img img{width:100%;height:100%;object-fit:cover}
+.kv{display:grid;grid-template-columns:90px 1fr;gap:6px 12px;font-size:14px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0}
+.notes{white-space:pre-wrap}
+.back{display:inline-flex;align-items:center;gap:4px;color:var(--muted);text-decoration:none;font-size:14px;margin-bottom:8px}
+.mini-counter{display:flex;align-items:center;gap:8px;margin-top:6px}
+.mini-counter b{font-variant-numeric:tabular-nums;min-width:2ch;text-align:center}
+.mini-counter button{border:1px solid var(--border);background:var(--surface);border-radius:8px;width:34px;height:30px;cursor:pointer;font-weight:700}
+.mini-counter button.plus{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+table.ref{width:100%;border-collapse:collapse;font-size:13px}
+table.ref th,table.ref td{padding:6px 8px;border-bottom:1px solid var(--border);text-align:left}
+table.ref th{color:var(--muted);font-weight:500}
+/* gauge */
+.form-heading{font-weight:700;font-size:14px;padding-top:6px;border-top:1px dashed var(--border);margin-top:4px}
+.gpair{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+.gcell{background:var(--surface-2);border-radius:10px;padding:6px 12px;min-width:120px}
+.gcell .gl{font-size:11px;color:var(--muted)}
+.gcell .gv{font-weight:700;font-variant-numeric:tabular-nums}
+.garrow{color:var(--muted);font-weight:700}
+.gitem{align-items:flex-start}
+.gcard{margin-bottom:14px;overflow:hidden}
+.ghead{display:flex;gap:14px;align-items:center;padding:14px 16px;background:var(--surface-2);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.ghead .main{flex:1;min-width:0}
+.ghead .t{font-weight:700;font-size:16px}
+.ghead .meta{color:var(--muted);font-size:13px;display:flex;gap:4px 12px;flex-wrap:wrap}
+.gcard .gitem{padding-left:24px}
+/* patterns */
+.pat-thumb{height:170px;position:relative;align-items:flex-start}
+.pat-thumb img{object-position:top}
+.pat-img{display:flex;width:100%;height:100%;align-items:center;justify-content:center}
+#imgPrevWrap{display:inline-block}
+.bk-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 0;border-top:1px solid var(--border)}
+#imgPrevWrap img{width:100%;height:100%;object-fit:cover}
+.pat-badge{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.65);color:#fff;font-size:11px;padding:2px 8px;border-radius:99px}
+.drop{display:block;border:2px dashed var(--border);border-radius:12px;padding:18px;text-align:center;cursor:pointer;color:var(--text);font-weight:400 !important;font-size:14px !important}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+/* viewer */
+.viewer{position:fixed;inset:0;z-index:60;background:#3a3633;display:flex;flex-direction:column}
+.viewer[hidden]{display:none}
+.vbar{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.vtitle{flex:1;min-width:80px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vgroup{display:flex;align-items:center;gap:2px;background:var(--surface-2);border-radius:10px;padding:2px}
+.vbtn{border:0;background:none;min-width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:18px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;color:var(--text);text-decoration:none}
+.vbtn:hover{background:var(--surface)}
+.vinfo{font-size:13px;font-weight:500;min-width:54px;text-align:center;font-variant-numeric:tabular-nums}
+.vcounter{display:flex;align-items:center;gap:6px}
+.vcounter:empty{display:none}
+.vcounter button{border:1px solid var(--border);background:var(--surface);border-radius:8px;width:38px;height:34px;cursor:pointer;font-weight:700;font-size:16px}
+.vcounter button.plus{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.vcounter b{font-variant-numeric:tabular-nums;min-width:2.5ch;text-align:center;font-size:17px}
+.vcounter b small{font-weight:400;color:var(--muted);font-size:11px}
+.vpages{flex:1;overflow:auto;padding:12px;position:relative;-webkit-overflow-scrolling:touch}
+.vpage{background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.35);position:relative;margin:0 auto 12px}
+.vpage canvas{display:block}
+.vnum{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#bbb;font-size:28px}
+.vpage canvas + .vnum{display:none}
+.vmsg{color:#eee;text-align:center;margin:auto;padding:30px;line-height:1.6}
+.vimg{max-width:none;display:block;margin:0 auto;background:#fff}
+.vpages{touch-action:pan-x pan-y;will-change:scroll-position}
+/* 손가락 터치 기기(태블릿): 버튼을 크게 */
+@media (pointer:coarse){
+  .vbtn{min-width:44px;height:44px;font-size:20px}
+  .vcounter button{width:48px;height:44px;font-size:20px}
+  .vcounter b{font-size:20px}
+  .vmark-bar .mb{padding:12px 18px;font-size:15px}
+  .vmark-grip{width:56px;height:20px;bottom:-12px;border-radius:10px}
+  .vmark-grip::after{top:9px}
+  .counter .ctrl button{padding:18px}
+}
+.vimgwrap{width:100%}
+.vimgwrap .vimg{width:100%}
+.vmark{position:absolute;left:-6px;right:-6px;background:rgba(255,214,0,.32);border-top:2px solid #e8a400;border-bottom:2px solid #e8a400;cursor:grab;touch-action:none;z-index:2;mix-blend-mode:multiply}
+.vmark.dragging{cursor:grabbing;background:rgba(255,214,0,.45)}
+.vmark-tag{position:absolute;left:0;top:-24px;background:#e8a400;color:#fff;font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px 6px 0 0;white-space:nowrap}
+.vmark-grip{position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);width:44px;height:14px;border-radius:7px;background:#e8a400;cursor:ns-resize;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.vmark-grip::after{content:"";position:absolute;left:12px;right:12px;top:6px;height:2px;background:rgba(255,255,255,.8);border-radius:1px}
+.vmark-shade{position:absolute;left:0;right:0;top:0;background:rgba(60,50,40,.12);pointer-events:none;z-index:1}
+.vmark-bar{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--border)}
+.vmark-bar .mb{border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:9px 14px;font-weight:600;cursor:pointer;font-size:14px}
+.vmark-bar .mb.main{background:#e8a400;border-color:#e8a400;color:#fff}
+.vmark-bar .mb.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+@media (max-width:820px){ .vtitle{order:-1;flex-basis:calc(100% - 50px)} }
+/* toast */
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:11px 16px;border-radius:12px;display:flex;gap:14px;align-items:center;opacity:0;pointer-events:none;transition:.2s;z-index:100;font-size:14px;max-width:calc(100vw - 32px)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.toast button{background:none;border:0;color:var(--accent);font-weight:700;cursor:pointer}
+@media (min-width:821px){.toast{bottom:28px}}
+.fab{display:none}
+@media (max-width:820px){
+  .fab{display:flex;position:fixed;right:18px;bottom:calc(78px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:18px;border:0;background:var(--accent);color:var(--accent-text);font-size:28px;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(200,85,61,.4);z-index:25;cursor:pointer}
+  .hide-mobile{display:none}
+  .item{flex-wrap:wrap;gap:8px 12px}
+  .item .main{flex:1 1 calc(100% - 60px)}
+  .item > :not(.swatch):not(.main){margin-left:54px}
+  .item > :not(.swatch):not(.main) ~ .acts{margin-left:auto}
+  .item > div[style*="text-align:right"]{text-align:left !important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side"></aside>
+  <div style="flex:1;min-width:0">
+    <header class="topbar">
+      <div class="brand">🧶 뜨개 노트</div>
+      <div class="row" style="gap:2px">
+        <button class="icon-btn" data-action="toggleTheme" title="화면 테마 바꾸기">🌓</button>
+        <a class="icon-btn" href="#/settings" title="설정·백업" style="text-decoration:none">⚙️</a>
+      </div>
+    </header>
+    <main id="view"></main>
+  </div>
+</div>
+<nav class="bottom" id="bottom"></nav>
+<button class="fab" id="fab" aria-label="추가">＋</button>
+<dialog id="dlg"></dialog>
+<div class="viewer" id="viewer" hidden>
+  <div class="vbar">
+    <button class="icon-btn" data-action="closeViewer" aria-label="닫기" title="닫기 (Esc)">✕</button>
+    <div class="vtitle" id="vTitle"></div>
+    <div class="vgroup">
+      <button class="vbtn" data-action="vPage" data-d="-1" aria-label="이전 쪽" title="이전 쪽 (←)">‹</button>
+      <span id="vPageInfo" class="vinfo"></span>
+      <button class="vbtn" data-action="vPage" data-d="1" aria-label="다음 쪽" title="다음 쪽 (→)">›</button>
+    </div>
+    <div class="vgroup">
+      <button class="vbtn" data-action="vZoom" data-d="-0.25" aria-label="축소">−</button>
+      <button class="vbtn vinfo" data-action="vZoom" data-d="0" id="vZoom" title="화면 너비에 맞추기">100%</button>
+      <button class="vbtn" data-action="vZoom" data-d="0.25" aria-label="확대">＋</button>
+    </div>
+    <div class="vcounter" id="vCounter"></div>
+    <button class="vbtn" data-action="vFull" title="전체 화면">⛶</button>
+    <a class="vbtn" id="vOpen" target="_blank" rel="noopener" title="새 탭에서 열기 (인쇄·다운로드)">⤴</a>
+  </div>
+  <div class="vpages" id="vPages"></div>
+  <div class="vmark-bar" id="vMarkBar"></div>
+</div>
+<div class="toast" id="toast"><span id="toastMsg"></span><button id="toastBtn"></button></div>
+<input type="file" id="importFile" accept="application/json,.json" multiple hidden>
+
+<script>
+/* ============ 데이터 ============ */
+const KEY = 'knit-notes-v1';
+const WEIGHTS = [
+  ['0','0 레이스 (Lace)'],['1','1 핑거링·삭스 (Fingering)'],['2','2 스포츠 (Sport)'],['3','3 DK'],
+  ['4','4 워스티드·아란 (Worsted/Aran)'],['5','5 벌키 (Bulky)'],['6','6 슈퍼벌키 (Super Bulky)'],['7','7 점보 (Jumbo)']
+];
+const WEIGHT_SHORT = {'0':'레이스','1':'핑거링','2':'스포츠','3':'DK','4':'워스티드/아란','5':'벌키','6':'슈퍼벌키','7':'점보'};
+const STATUS = {plan:'계획', active:'진행 중', hold:'보류', done:'완성'};
+const STATUS_ORDER = {active:0, plan:1, hold:2, done:3};
+const NEEDLE_TYPES = ['줄바늘','막대바늘','장갑바늘(양쪽)','교체형 바늘팁','교체형 케이블','코바늘','기타'];
+const US_SIZES = [[2,'0'],[2.25,'1'],[2.75,'2'],[3,'2½'],[3.25,'3'],[3.5,'4'],[3.75,'5'],[4,'6'],[4.5,'7'],[5,'8'],[5.5,'9'],[6,'10'],[6.5,'10½'],[7,'—'],[8,'11'],[9,'13'],[10,'15'],[12,'17'],[15,'19'],[19,'35'],[25,'50']];
+const PROJECT_EMOJI = ['🧶','🧣','🧤','🧦','👒','🧥','👕','🎒','🧸','🪡'];
+
+let db = load();
+function blank(){ return {projects:[], patterns:[], gauges:[], yarns:[], needles:[], settings:{theme:'auto'}}; }
+function load(){
+  try{ const d = JSON.parse(localStorage.getItem(KEY)); if(d && d.projects) return migrate(Object.assign(blank(), d)); }catch(e){}
+  return blank();
+}
+/* 예전 형식(sts/rows + blocked) 게이지를 전/후 형식으로 변환 */
+function migrate(d){
+  d.gauges.forEach(g => {
+    if('sts' in g || 'rows' in g){
+      if(g.blocked){ g.aSts = g.aSts || g.sts; g.aRows = g.aRows || g.rows; }
+      else { g.bSts = g.bSts || g.sts; g.bRows = g.bRows || g.rows; }
+      delete g.sts; delete g.rows; delete g.blocked;
+    }
+  });
+  return d;
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(db)); return true; }
+  catch(e){ toast('저장 공간이 부족해요. 사진 수를 줄이거나 백업 후 정리해 주세요.'); return false; }
+}
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+const fmt = (n, d=1) => isFinite(n) ? (Math.round(n * 10**d) / 10**d).toLocaleString('ko-KR') : '—';
+const today = () => new Date().toISOString().slice(0,10);
+const byId = (coll, id) => db[coll].find(x => x.id === id);
+const $ = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => [...el.querySelectorAll(s)];
+const usSize = mm => { const f = US_SIZES.find(s => s[0] === num(mm)); return f && f[1] !== '—' ? 'US '+f[1] : ''; };
+
+function yarnLabel(y){ return [y.brand, y.name].filter(Boolean).join(' ') + (y.colorName ? ` · ${y.colorName}` : ''); }
+function needleLabel(n){ return `${fmt(num(n.size),2)}mm ${n.type || ''}${n.length ? ' '+n.length+'cm' : ''}`; }
+/* 게이지: 블로킹 후 값이 있으면 그 값을, 없으면 블로킹 전 값을 대표값으로 사용 */
+function gaugeVals(g){
+  const after = num(g.aSts) || num(g.aRows);
+  return after ? {sts: num(g.aSts), rows: num(g.aRows), after: true} : {sts: num(g.bSts), rows: num(g.bRows), after: false};
+}
+/* 세탁 후 크기 변화(%) — 10cm당 코 수가 줄면 같은 코 수가 더 넓어짐 = 늘어남 */
+function gaugeChange(g){
+  const pct = (b, a) => num(b) && num(a) ? (num(b) / num(a) - 1) * 100 : null;
+  return {w: pct(g.bSts, g.aSts), h: pct(g.bRows, g.aRows)};
+}
+function gaugeYarnName(g){
+  const y = g.yarnId && byId('yarns', g.yarnId);
+  return y ? yarnLabel(y) : (g.yarnText || '실 미지정');
+}
+function gaugeLabel(g){
+  const v = gaugeVals(g);
+  const ns = gaugeNeedleSize(g);
+  return `${gaugeYarnName(g)}${ns ? ' · ' + fmt(ns,2) + 'mm' : ''} · ${fmt(v.sts)}코×${fmt(v.rows)}단 (${v.after ? '블로킹 후' : '블로킹 전'})` + (g.stitch ? ` · ${g.stitch}` : '');
+}
+function yarnUsed(yarnId, exceptProjectId){
+  let s = 0;
+  db.projects.forEach(p => { if(p.id === exceptProjectId) return; (p.yarnUses||[]).forEach(u => { if(u.yarnId === yarnId) s += num(u.skeins); }); });
+  return s;
+}
+function needleInUse(nid){ return db.projects.filter(p => p.status === 'active' && (p.needleIds||[]).includes(nid)); }
+
+/* ============ 테마 ============ */
+function applyTheme(){
+  const t = db.settings.theme || 'auto';
+  if(t === 'auto') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', t);
+}
+applyTheme();
+
+/* ============ 네비게이션 ============ */
+const NAV = [
+  ['home','🏠','홈'],['projects','🧶','프로젝트'],['calc','🧮','게이지 계산기'],['gauges','📏','게이지 기록'],['stash','🧺','실·바늘 보관함']
+];
+NAV.splice(2, 0, ['patterns','📖','도안 보관함']);
+const NAV_SHORT = {home:'홈',projects:'프로젝트',patterns:'도안',calc:'계산기',gauges:'게이지',stash:'보관함'};
+function renderNav(cur){
+  $('#side').innerHTML = `<div class="brand">🧶 뜨개 노트</div>` +
+    NAV.map(([k,i,l]) => `<a class="nav-btn ${cur===k?'active':''}" href="#/${k}"><span class="ico">${i}</span>${l}</a>`).join('') +
+    `<div class="spacer"></div>
+     <a class="nav-btn ${cur==='settings'?'active':''}" href="#/settings"><span class="ico">⚙️</span>설정·백업</a>
+     <button class="nav-btn" data-action="toggleTheme"><span class="ico">🌓</span>테마: ${{auto:'자동',light:'밝게',dark:'어둡게'}[db.settings.theme||'auto']}</button>`;
+  $('#bottom').innerHTML = NAV.map(([k,i]) => `<a class="nav-btn ${cur===k?'active':''}" href="#/${k}"><span class="ico">${i}</span>${NAV_SHORT[k]}</a>`).join('');
+}
+
+/* 화면별 임시 상태 */
+const ui = { pFilter:'all', pSearch:'', stashTab:'yarn', ySearch:'', yWeight:'', nType:'', gSearch:'', patSearch:'', patCat:'', calcTab:'swatch', calc:{} };
+
+function route(){
+  const parts = (location.hash.replace(/^#\/?/, '') || 'home').split('/');
+  const [page, id] = parts;
+  renderNav(page === 'project' ? 'projects' : page);
+  const view = $('#view');
+  const fab = $('#fab');
+  fab.style.display = '';
+  fab.onclick = null;
+  switch(page){
+    case 'projects': view.innerHTML = viewProjects(); fab.onclick = () => editProject(); break;
+    case 'project': view.innerHTML = viewProject(id); fab.style.display = 'none'; break;
+    case 'patterns': view.innerHTML = viewPatterns(); fab.onclick = () => editPattern(); break;
+    case 'calc': view.innerHTML = viewCalc(); fab.style.display = 'none'; bindCalc(); break;
+    case 'gauges': view.innerHTML = viewGauges(); fab.onclick = () => editGauge(); break;
+    case 'stash': view.innerHTML = viewStash(); fab.onclick = () => ui.stashTab === 'yarn' ? editYarn() : editNeedle(); break;
+    case 'settings': view.innerHTML = viewSettings(); fab.style.display = 'none';
+      if(navigator.storage && navigator.storage.estimate) navigator.storage.estimate().then(e => { const el = $('#storeInfo'); if(el) el.textContent = ` · 도안 포함 전체 ${fmtSize(e.usage||0)} 사용 (여유 약 ${fmtSize((e.quota||0) - (e.usage||0))})`; });
+      break;
+    default: view.innerHTML = viewHome(); fab.onclick = () => editProject();
+  }
+  bindInputs();
+  hydrateImages(view);
+  if(page === 'patterns') regenThumbs();
+}
+window.addEventListener('hashchange', () => { route(); window.scrollTo(0,0); });
+function refresh(){ const y = window.scrollY; route(); window.scrollTo(0,y); }
+
+/* ============ 홈 ============ */
+function viewHome(){
+  const active = db.projects.filter(p => p.status === 'active');
+  const totalSkeins = db.yarns.reduce((s,y) => s + num(y.skeins), 0);
+  const totalM = db.yarns.reduce((s,y) => s + num(y.skeins) * num(y.meters), 0);
+  const isEmpty = !db.projects.length && !db.yarns.length && !db.needles.length && !db.gauges.length;
+  return `
+  <div class="page-head"><div><h1>안녕하세요 👋</h1><p class="sub">오늘은 어떤 걸 떠볼까요?</p></div>
+    <button class="btn primary hide-mobile" data-action="editProject">＋ 새 프로젝트</button></div>
+  ${isEmpty ? `<div class="card" style="margin-bottom:22px">
+      <h2>처음 오셨군요! 이렇게 시작해 보세요</h2>
+      <ol class="small" style="margin:0 0 14px;padding-left:20px;line-height:1.9">
+        <li><b>실·바늘 보관함</b>에 가지고 있는 실과 바늘을 등록해요.</li>
+        <li>스와치를 뜨고 <b>게이지 계산기</b>로 10cm당 코·단 수를 구해 저장해요.</li>
+        <li><b>프로젝트</b>를 만들고 실·바늘·게이지를 연결한 뒤 단 카운터로 진행을 기록해요.</li>
+      </ol>
+      <div class="row"><a class="btn" href="#/stash">🧺 실 등록하기</a><a class="btn" href="#/calc">🧮 계산기 열기</a><button class="btn" data-action="loadSample">✨ 예시 데이터로 둘러보기</button></div>
+    </div>` : ''}
+  <div class="stats">
+    <a class="stat" href="#/projects"><div class="n">${active.length}</div><div class="l">진행 중 프로젝트</div></a>
+    <a class="stat" href="#/projects"><div class="n">${db.projects.filter(p=>p.status==='done').length}</div><div class="l">완성작</div></a>
+    <a class="stat" href="#/stash"><div class="n">${fmt(totalSkeins)}<span class="small muted"> 볼</span></div><div class="l">보관 중인 실 ${totalM ? '· 약 '+fmt(totalM,0)+'m' : ''}</div></a>
+    <a class="stat" href="#/stash" data-action="stashTab" data-tab="needle"><div class="n">${db.needles.reduce((s,n)=>s+(num(n.qty)||1),0)}</div><div class="l">보유 바늘</div></a>
+  </div>
+  <div class="section">
+    <div class="section-head"><h2>진행 중인 프로젝트</h2><a class="small" href="#/projects">전체 보기 →</a></div>
+    ${active.length ? `<div class="grid cols-2">${active.map(p => projectCard(p, true)).join('')}</div>`
+      : `<div class="card empty"><div class="big">🪡</div><p>진행 중인 프로젝트가 없어요.</p><button class="btn primary" data-action="editProject">＋ 프로젝트 시작하기</button></div>`}
+  </div>
+  ${db.gauges.length ? `<div class="section"><div class="section-head"><h2>최근 게이지</h2><a class="small" href="#/gauges">전체 보기 →</a></div>
+    <div class="card list">${db.gauges.slice(-3).reverse().map(gaugeItem).join('')}</div></div>` : ''}`;
+}
+
+/* ============ 프로젝트 ============ */
+function projectThumb(p){ return p.photo ? imgTag(p.photo) : (p.emoji || '🧶'); }
+function projectCard(p, withCounter){
+  const c = (p.counters||[])[0];
+  return `<div class="card pcard" data-href="#/project/${p.id}">
+    <div class="pthumb">${projectThumb(p)}</div>
+    <div class="pbody">
+      <div class="row between"><span class="t">${esc(p.name)}</span><span class="tag s-${p.status}">${STATUS[p.status]}</span></div>
+      ${(() => { const n = (p.patternId && byId('patterns', p.patternId) || {}).name || p.pattern; return n ? `<div class="small muted">📖 ${esc(n)}</div>` : ''; })()}
+      <div class="row small muted" style="gap:10px"><span>진행률 ${num(p.progress)}%</span>${p.start ? `<span>시작 ${p.start}</span>` : ''}</div>
+      <div class="bar"><i style="width:${Math.min(100,num(p.progress))}%"></i></div>
+      ${withCounter && c ? `<div class="mini-counter" data-stop>
+          <span class="small muted">${esc(c.name)}</span>
+          <button data-action="count" data-pid="${p.id}" data-cid="${c.id}" data-d="-1" aria-label="빼기">−</button>
+          <b>${c.value}</b>${c.target ? `<span class="small muted">/ ${c.target}</span>` : ''}
+          <button class="plus" data-action="count" data-pid="${p.id}" data-cid="${c.id}" data-d="1" aria-label="더하기">＋</button>
+        </div>` : ''}
+    </div></div>`;
+}
+function viewProjects(){
+  const q = ui.pSearch.trim().toLowerCase();
+  const list = db.projects
+    .filter(p => ui.pFilter === 'all' || p.status === ui.pFilter)
+    .filter(p => !q || [p.name, p.pattern, p.notes, p.recipient].join(' ').toLowerCase().includes(q))
+    .sort((a,b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || (b.updated||0) - (a.updated||0));
+  const count = s => db.projects.filter(p => s === 'all' || p.status === s).length;
+  return `
+  <div class="page-head"><div><h1>프로젝트</h1><p class="sub">떴던 것, 뜨는 중인 것, 뜰 것을 모두 기록해요.</p></div>
+    <button class="btn primary hide-mobile" data-action="editProject">＋ 새 프로젝트</button></div>
+  <div class="toolbar">
+    <input class="search" type="search" placeholder="이름·도안·메모 검색" value="${esc(ui.pSearch)}" data-bind="pSearch">
+  </div>
+  <div class="chips" style="margin-bottom:16px">
+    ${[['all','전체'],['active','진행 중'],['plan','계획'],['hold','보류'],['done','완성']].map(([k,l]) =>
+      `<button class="chip ${ui.pFilter===k?'active':''}" data-action="pFilter" data-v="${k}">${l} ${count(k)}</button>`).join('')}
+  </div>
+  ${list.length ? `<div class="grid cols-3">${list.map(p => projectCard(p)).join('')}</div>`
+    : `<div class="card empty"><div class="big">🧶</div><p>${db.projects.length ? '조건에 맞는 프로젝트가 없어요.' : '아직 프로젝트가 없어요. 첫 작품을 등록해 볼까요?'}</p><button class="btn primary" data-action="editProject">＋ 새 프로젝트</button></div>`}`;
+}
+function viewProject(id){
+  const p = byId('projects', id);
+  if(!p) return `<a class="back" href="#/projects">← 프로젝트</a><div class="card empty"><div class="big">🤔</div><p>프로젝트를 찾을 수 없어요.</p></div>`;
+  const g = p.gaugeId && byId('gauges', p.gaugeId);
+  const needles = (p.needleIds||[]).map(i => byId('needles', i)).filter(Boolean);
+  const yarns = (p.yarnUses||[]).map(u => ({u, y: byId('yarns', u.yarnId)})).filter(x => x.y);
+  const meters = yarns.reduce((s,{u,y}) => s + num(u.skeins) * num(y.meters), 0);
+  const pat = p.patternId && byId('patterns', p.patternId);
+  return `
+  <a class="back" href="#/projects">← 프로젝트</a>
+  <div class="detail-hero">
+    <div class="hero-img">${projectThumb(p)}</div>
+    <div>
+      <div class="row" style="margin-bottom:4px"><span class="tag s-${p.status}">${STATUS[p.status]}</span>${p.recipient ? `<span class="tag">🎁 ${esc(p.recipient)}</span>` : ''}</div>
+      <h1>${esc(p.name)}</h1>
+      ${pat ? `<div class="row" style="margin:0 0 10px"><span class="muted">📖 ${esc(pat.name)}${pat.designer ? ' · ' + esc(pat.designer) : ''}</span>
+          ${pat.fileId ? `<button class="btn sm primary" data-action="openPattern" data-id="${pat.id}" data-pid="${p.id}">도안 펼치기${pat.marker && pat.marker.on ? ` (📍${pat.marker.page}쪽)` : pat.lastPage > 1 ? ` (${pat.lastPage}쪽)` : ''}</button>` : ''}</div>`
+        : p.pattern ? `<p class="muted" style="margin:0 0 10px">📖 ${p.patternUrl ? `<a href="${esc(p.patternUrl)}" target="_blank" rel="noopener">${esc(p.pattern)}</a>` : esc(p.pattern)}</p>` : ''}
+      <div style="margin:12px 0">
+        <div class="row between small"><span class="muted">진행률</span><b>${num(p.progress)}%</b></div>
+        <input type="range" min="0" max="100" step="5" value="${num(p.progress)}" data-action-input="progress" data-pid="${p.id}" aria-label="진행률">
+      </div>
+      <dl class="kv">
+        ${p.size ? `<dt>사이즈</dt><dd>${esc(p.size)}</dd>` : ''}
+        <dt>기간</dt><dd>${p.start || '—'} ~ ${p.end || (p.status === 'done' ? '—' : '진행 중')}</dd>
+        <dt>게이지</dt><dd>${g ? `<a href="#/gauges">${esc(gaugeLabel(g))}</a>` : '<span class="muted">연결 안 됨</span>'}</dd>
+        <dt>바늘</dt><dd>${needles.length ? needles.map(n => esc(needleLabel(n))).join('<br>') : '<span class="muted">연결 안 됨</span>'}</dd>
+        <dt>실</dt><dd>${yarns.length ? yarns.map(({u,y}) => `${esc(yarnLabel(y))} <span class="muted">× ${fmt(num(u.skeins))}볼</span>`).join('<br>') + (meters ? `<br><span class="muted small">총 약 ${fmt(meters,0)}m</span>` : '') : '<span class="muted">연결 안 됨</span>'}</dd>
+      </dl>
+      <div class="row" style="margin-top:16px">
+        <button class="btn" data-action="editProject" data-id="${p.id}">✏️ 수정</button>
+        ${p.status !== 'done' ? `<button class="btn" data-action="finishProject" data-id="${p.id}">🎉 완성 처리</button>` : ''}
+        <button class="btn ghost danger" data-action="del" data-coll="projects" data-id="${p.id}">삭제</button>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-head"><h2>카운터</h2><button class="btn sm" data-action="addCounter" data-pid="${p.id}">＋ 카운터 추가</button></div>
+    ${(p.counters||[]).length ? `<div class="counters">${p.counters.map(c => counterCard(p,c)).join('')}</div>
+      <p class="small muted" style="margin-top:8px">💡 키보드 사용 시 <b>스페이스바</b> 또는 <b>+</b>로 첫 번째 카운터를 올릴 수 있어요.</p>`
+      : `<div class="card empty"><p>단·코·무늬 반복을 세는 카운터를 추가해 보세요.</p><button class="btn primary" data-action="addCounter" data-pid="${p.id}">＋ 카운터 추가</button></div>`}
+  </div>
+  <div class="section">
+    <div class="section-head"><h2>메모</h2></div>
+    <div class="card"><textarea placeholder="코 잡은 수, 수정한 부분, 다음에 참고할 점 등을 적어 두세요. (자동 저장)" data-action-input="notes" data-pid="${p.id}" style="min-height:140px">${esc(p.notes)}</textarea></div>
+  </div>`;
+}
+function counterCard(p, c){
+  const rep = num(c.repeat);
+  const pct = c.target ? Math.min(100, c.value / c.target * 100) : 0;
+  return `<div class="card counter">
+    <div class="name"><span>${esc(c.name)}</span>
+      <span><button class="btn sm ghost" data-action="editCounter" data-pid="${p.id}" data-cid="${c.id}" title="설정">⚙️</button></span></div>
+    <div class="val">${c.value}</div>
+    ${c.target ? `<div class="rep">목표 ${c.target} · ${Math.max(0, c.target - c.value)} 남음</div><div class="bar" style="margin:6px 0"><i style="width:${pct}%"></i></div>` : ''}
+    ${rep ? `<div class="rep">🔁 ${rep}단 반복: <b>${Math.floor(c.value / rep) + 1}</b>번째 반복의 <b>${(c.value % rep) + 1}</b>단째</div>` : ''}
+    <div class="ctrl">
+      <button data-action="count" data-pid="${p.id}" data-cid="${c.id}" data-d="-1" aria-label="빼기">−</button>
+      <button class="plus" data-action="count" data-pid="${p.id}" data-cid="${c.id}" data-d="1" aria-label="더하기">＋</button>
+    </div>
+  </div>`;
+}
+function editProject(id, preset){
+  const p = id ? byId('projects', id) : null;
+  const v = p || {...(preset || {}), status:'active', start: today(), progress:0, emoji: PROJECT_EMOJI[Math.floor(Math.random()*PROJECT_EMOJI.length)]};
+  openForm(p ? '프로젝트 수정' : '새 프로젝트', [
+    {key:'name', label:'프로젝트 이름', required:true, full:true, placeholder:'예: 엄마 겨울 목도리'},
+    {key:'status', label:'상태', type:'select', options: Object.entries(STATUS)},
+    {key:'emoji', label:'아이콘 (사진 없을 때)', type:'select', options: PROJECT_EMOJI.map(e => [e,e])},
+    {key:'patternId', label:'도안 (도안 보관함)', type:'select', full:true, options:[['','— 보관함에서 고르지 않음 —'], ...db.patterns.map(x => [x.id, x.name + (x.fileId ? ' 📄' : '')])], hint: db.patterns.length ? '보관함 도안을 연결하면 프로젝트 화면에서 바로 펼쳐 볼 수 있어요.' : '도안 보관함에 PDF를 올리면 여기서 연결할 수 있어요.'},
+    {key:'pattern', label:'또는 도안 이름 직접 입력', placeholder:'예: 하트 아란 머플러'},
+    {key:'patternUrl', label:'도안 링크', placeholder:'https://'},
+    {key:'size', label:'사이즈', placeholder:'예: M, 가슴둘레 100cm'},
+    {key:'recipient', label:'누구를 위해?', placeholder:'예: 나, 친구'},
+    {key:'start', label:'시작일', type:'date'},
+    {key:'end', label:'완성일', type:'date'},
+    {key:'gaugeId', label:'게이지', type:'select', full:true, options: [['','— 선택 안 함 —'], ...db.gauges.map(g => [g.id, gaugeLabel(g)])], hint: db.gauges.length ? '' : '게이지 기록 탭에서 먼저 저장하면 여기서 고를 수 있어요.'},
+    {key:'needleIds', label:'사용 바늘', type:'checks', full:true, options: db.needles.map(n => [n.id, needleLabel(n)]), emptyText:'보관함에 등록된 바늘이 없어요.'},
+    {key:'yarnUses', label:'사용 실 (보관함에서 선택)', type:'yarnUses', full:true, pid: p && p.id},
+    {key:'photo', label:'사진', type:'image', full:true},
+  ], v, async vals => {
+    /* 사진: 새로 고른 사진만 저장, 지운 사진은 정리 */
+    const oldPhoto = p ? p.photo : '';
+    if(vals.photo && vals.photo.startsWith('data:')){
+      try{ vals.photo = await storeImage(vals.photo); }catch(e){ toast('사진을 저장하지 못했어요'); vals.photo = oldPhoto || ''; }
+    }
+    if(oldPhoto && oldPhoto !== vals.photo) deleteImage(oldPhoto);
+    if(p){ Object.assign(p, vals, {updated: Date.now()}); }
+    else {
+      db.projects.push(Object.assign({id: uid(), progress:0, notes:'', counters:[{id: uid(), name:'단', value:0, target:0, repeat:0}], created: Date.now(), updated: Date.now()}, vals));
+    }
+    save();
+    toast(p ? '수정했어요' : '프로젝트를 만들었어요 🎉');
+    if(!p) location.hash = '#/project/' + db.projects[db.projects.length-1].id; else refresh();
+  });
+}
+
+/* ============ 게이지 계산기 ============ */
+function gaugeSelect(id){
+  if(!db.gauges.length) return '';
+  return `<div class="field full"><label>저장된 게이지 불러오기</label><select data-gauge-pick="${id}"><option value="">— 직접 입력 —</option>${db.gauges.map(g => `<option value="${g.id}">${esc(gaugeLabel(g))}</option>`).join('')}</select></div>`;
+}
+function cin(key, label, ph='', hint=''){
+  return `<div class="field"><label>${label}</label><input type="number" inputmode="decimal" step="any" min="0" data-calc="${key}" value="${esc(ui.calc[key] ?? '')}" placeholder="${ph}">${hint ? `<span class="hint">${hint}</span>` : ''}</div>`;
+}
+function viewCalc(){
+  const tabs = [['swatch','스와치 → 게이지'],['size','치수 → 코·단'],['convert','도안 게이지 맞추기'],['measure','코·단 → 치수'],['yarn','실 필요량']];
+  const t = ui.calcTab;
+  let body = '';
+  if(t === 'swatch') body = `
+    <div class="card"><h2>스와치에서 잰 값</h2>
+      <p class="small muted" style="margin-top:-6px">스와치 가운데에서 잰 길이와 그 안의 코·단 수를 입력하세요. 세탁·블로킹 후에 재면 더 정확해요.</p>
+      <div class="inline-inputs">${cin('sw_w','잰 가로 길이 (cm)','10')}${cin('sw_s','그 안의 코 수','22')}${cin('sw_h','잰 세로 길이 (cm)','10')}${cin('sw_r','그 안의 단 수','30')}</div>
+    </div>
+    <div class="card"><h2>결과</h2><div class="result"><div class="result-row">
+      <div><div class="lbl">10cm당 코</div><div class="big" id="r_sw_s">—</div></div>
+      <div><div class="lbl">10cm당 단</div><div class="big" id="r_sw_r">—</div></div></div></div>
+      <div class="explain" id="r_sw_x"></div>
+      <div class="small muted" style="margin-top:14px">새 게이지로 저장</div>
+      <div class="row" style="margin-top:6px"><button class="btn primary" data-action="saveSwatch" data-when="b">🧺 블로킹 전으로</button><button class="btn primary" data-action="saveSwatch" data-when="a">💧 블로킹 후로</button></div>
+      ${db.gauges.length ? `<button class="btn sm ghost" style="margin-top:8px;padding-left:0" data-action="pickSwatchTarget">＋ 이미 있는 게이지에 추가하기 ▾</button>
+      <div id="swTarget" style="display:none" class="card list">${db.gauges.slice().reverse().map(g => `<div class="item" style="padding:10px 12px">
+        <div class="main"><div class="t small">${esc(gaugeYarnName(g))}</div><div class="meta">${esc(g.stitch || '')}</div></div>
+        <div class="acts"><button class="btn sm" data-action="saveSwatch" data-when="b" data-id="${g.id}">전</button><button class="btn sm" data-action="saveSwatch" data-when="a" data-id="${g.id}">후</button></div></div>`).join('')}</div>` : ''}
+      <div class="row" style="margin-top:10px"><button class="btn" data-action="useSwatch">이 값으로 치수 계산 →</button></div>
+    </div>`;
+  if(t === 'size') body = `
+    <div class="card"><h2>내 게이지와 원하는 치수</h2>
+      <div class="inline-inputs">${gaugeSelect('sz')}${cin('g_s','10cm당 코 수','22')}${cin('g_r','10cm당 단 수','30')}${cin('sz_w','원하는 가로 (cm)','50')}${cin('sz_h','원하는 세로 (cm)','60')}${cin('sz_m','무늬 반복 코 수 (선택)','예: 4','계산된 코 수를 이 배수에 맞춰요')}${cin('sz_e','가장자리 코 추가 (선택)','예: 2','양쪽 겉뜨기 테두리 등')}</div>
+    </div>
+    <div class="card"><h2>결과</h2><div class="result"><div class="result-row">
+      <div><div class="lbl">코 잡을 수</div><div class="big" id="r_sz_s">—</div></div>
+      <div><div class="lbl">떠야 할 단 수</div><div class="big" id="r_sz_r">—</div></div></div></div>
+      <div class="explain" id="r_sz_x"></div></div>`;
+  if(t === 'convert') body = `
+    <div class="card"><h2>도안 게이지 vs 내 게이지</h2>
+      <div class="inline-inputs">${cin('cv_ps','도안: 10cm당 코','20')}${cin('cv_pr','도안: 10cm당 단','28')}${gaugeSelect('cv')}${cin('cv_ms','내: 10cm당 코','22')}${cin('cv_mr','내: 10cm당 단','30')}${cin('cv_n','도안의 코 수','100','도안에 적힌 코잡기 수 등')}${cin('cv_rn','도안의 단 수 (선택)','80')}</div>
+    </div>
+    <div class="card"><h2>결과</h2><div class="result"><div class="result-row">
+      <div><div class="lbl">내가 잡을 코 수</div><div class="big" id="r_cv_s">—</div></div>
+      <div><div class="lbl">내가 뜰 단 수</div><div class="big" id="r_cv_r">—</div></div></div></div>
+      <div class="explain" id="r_cv_x"></div></div>`;
+  if(t === 'measure') body = `
+    <div class="card"><h2>코·단 수와 게이지</h2>
+      <div class="inline-inputs">${gaugeSelect('ms')}${cin('m_gs','10cm당 코','22')}${cin('m_gr','10cm당 단','30')}${cin('m_s','코 수','110')}${cin('m_r','단 수','150')}</div>
+    </div>
+    <div class="card"><h2>결과</h2><div class="result"><div class="result-row">
+      <div><div class="lbl">완성 가로</div><div class="big" id="r_m_w">—</div></div>
+      <div><div class="lbl">완성 세로</div><div class="big" id="r_m_h">—</div></div></div></div>
+      <div class="explain">코 수 ÷ (10cm당 코 수) × 10 = 가로 길이로 계산해요. 지금 뜬 단 수를 넣으면 현재까지의 길이를 알 수 있어요.</div></div>`;
+  if(t === 'yarn') body = `
+    <div class="card"><h2>스와치 무게로 실 필요량 추정</h2>
+      <p class="small muted" style="margin-top:-6px">스와치를 저울에 달아 무게를 재면, 같은 실·같은 무늬로 뜰 때 필요한 양을 넓이 비율로 추정해요.</p>
+      <div class="inline-inputs">${cin('y_sw','스와치 가로 (cm)','15')}${cin('y_sh','스와치 세로 (cm)','15')}${cin('y_sg','스와치 무게 (g)','8')}${cin('y_area','완성품 총 넓이 (cm²)','예: 3000','목도리 20×150 = 3000')}${cin('y_bg','실 한 볼 무게 (g)','50')}${cin('y_bm','실 한 볼 길이 (m, 선택)','100')}</div>
+    </div>
+    <div class="card"><h2>결과</h2><div class="result"><div class="result-row">
+      <div><div class="lbl">필요한 실 (여유 10% 포함)</div><div class="big" id="r_y_g">—</div></div>
+      <div><div class="lbl">필요한 볼 수</div><div class="big" id="r_y_b">—</div></div></div></div>
+      <div class="explain" id="r_y_x"></div></div>`;
+  return `
+  <div class="page-head"><div><h1>게이지 계산기</h1><p class="sub">입력하는 즉시 계산돼요. 입력값은 탭을 옮겨도 유지돼요.</p></div>
+    <button class="btn sm" data-action="clearCalc">입력 초기화</button></div>
+  <div class="seg" style="margin-bottom:16px">${tabs.map(([k,l]) => `<button class="${t===k?'active':''}" data-action="calcTab" data-v="${k}">${l}</button>`).join('')}</div>
+  <div class="calc-grid">${body}</div>
+  ${t === 'size' || t === 'convert' ? `<p class="small muted" style="margin-top:14px">💡 게이지는 보통 <b>10cm × 10cm</b> 안의 코 수(가로)와 단 수(세로)로 표기해요. 도안에 4인치(10.16cm) 기준으로 적혀 있어도 거의 같게 보면 돼요.</p>` : ''}`;
+}
+function roundTo(n, m){ return m > 0 ? Math.round(n / m) * m : Math.round(n); }
+function calcUpdate(){
+  const c = k => num(ui.calc[k]);
+  const set = (id, v) => { const el = document.getElementById(id); if(el) el.innerHTML = v; };
+  const t = ui.calcTab;
+  if(t === 'swatch'){
+    const s = c('sw_w') ? c('sw_s') / c('sw_w') * 10 : 0, r = c('sw_h') ? c('sw_r') / c('sw_h') * 10 : 0;
+    set('r_sw_s', s ? fmt(s) + '<small>코</small>' : '—'); set('r_sw_r', r ? fmt(r) + '<small>단</small>' : '—');
+    set('r_sw_x', s || r ? `1cm당 ${fmt(s/10,2)}코, ${fmt(r/10,2)}단이에요.` : '값을 입력하면 결과가 나와요.');
+  }
+  if(t === 'size'){
+    const e = c('sz_e');
+    const raw = c('sz_w') * c('g_s') / 10, rawR = c('sz_h') * c('g_r') / 10;
+    const s = raw ? roundTo(raw, c('sz_m')) + e : 0, r = rawR ? Math.round(rawR) : 0;
+    set('r_sz_s', s ? s + '<small>코</small>' : '—'); set('r_sz_r', r ? r + '<small>단</small>' : '—');
+    const real = c('g_s') ? (s - e) / c('g_s') * 10 : 0;
+    set('r_sz_x', raw ? `정확한 계산값은 ${fmt(raw)}코${rawR ? ', '+fmt(rawR)+'단' : ''}이에요.${c('sz_m') ? ` ${c('sz_m')}코 배수로 맞추면 실제 가로는 약 ${fmt(real)}cm가 돼요.` : ''}` : '게이지와 원하는 치수를 입력하세요.');
+  }
+  if(t === 'convert'){
+    const s = c('cv_ps') ? c('cv_n') * c('cv_ms') / c('cv_ps') : 0;
+    const r = c('cv_pr') && c('cv_rn') ? c('cv_rn') * c('cv_mr') / c('cv_pr') : 0;
+    set('r_cv_s', s ? Math.round(s) + '<small>코</small>' : '—'); set('r_cv_r', r ? Math.round(r) + '<small>단</small>' : '—');
+    let x = '도안 게이지·내 게이지·도안 코 수를 입력하세요.';
+    if(c('cv_ps') && c('cv_ms')){
+      const ratio = c('cv_ps') / c('cv_ms');
+      const diff = (ratio - 1) * 100;
+      x = Math.abs(diff) < 1 ? '👍 게이지가 거의 같아요. 도안대로 뜨면 돼요.'
+        : `도안대로 ${c('cv_n') ? c('cv_n')+'코' : '같은 코 수'}를 잡으면 완성품이 약 <b>${fmt(Math.abs(diff))}% ${diff > 0 ? '커져요' : '작아져요'}</b>.` +
+          (c('cv_n') ? ` (도안 가로 ${fmt(c('cv_n')/c('cv_ps')*10)}cm → 내 가로 ${fmt(c('cv_n')/c('cv_ms')*10)}cm)` : '') +
+          `<br>바늘을 ${diff > 0 ? '한 치수 가늘게' : '한 치수 굵게'} 바꿔 게이지를 맞추거나, 위 결과대로 코 수를 조정하세요.`;
+    }
+    set('r_cv_x', x);
+  }
+  if(t === 'measure'){
+    const w = c('m_gs') ? c('m_s') / c('m_gs') * 10 : 0, h = c('m_gr') ? c('m_r') / c('m_gr') * 10 : 0;
+    set('r_m_w', w ? fmt(w) + '<small>cm</small>' : '—'); set('r_m_h', h ? fmt(h) + '<small>cm</small>' : '—');
+  }
+  if(t === 'yarn'){
+    const sa = c('y_sw') * c('y_sh');
+    const g = sa ? c('y_sg') / sa * c('y_area') * 1.1 : 0;
+    const balls = c('y_bg') ? g / c('y_bg') : 0;
+    set('r_y_g', g ? fmt(g,0) + '<small>g</small>' : '—'); set('r_y_b', balls ? Math.ceil(balls) + '<small>볼</small>' : '—');
+    set('r_y_x', g ? `넓이 1cm²당 ${fmt(c('y_sg')/sa,3)}g 기준.${c('y_bm') && c('y_bg') ? ` 길이로는 약 ${fmt(g / c('y_bg') * c('y_bm'),0)}m예요.` : ''} 같은 염색 로트(Lot)로 넉넉히 사 두는 걸 추천해요.` : '스와치 크기·무게와 완성품 넓이를 입력하세요.');
+  }
+}
+function bindCalc(){
+  $$('[data-calc]').forEach(el => el.addEventListener('input', () => { ui.calc[el.dataset.calc] = el.value; calcUpdate(); }));
+  $$('[data-gauge-pick]').forEach(el => el.addEventListener('change', () => {
+    const g = byId('gauges', el.value); if(!g) return;
+    const map = {sz:['g_s','g_r'], cv:['cv_ms','cv_mr'], ms:['m_gs','m_gr']}[el.dataset.gaugePick];
+    const v = gaugeVals(g); ui.calc[map[0]] = v.sts || ''; ui.calc[map[1]] = v.rows || '';
+    map.forEach(k => { const i = $(`[data-calc="${k}"]`); if(i) i.value = ui.calc[k]; });
+    calcUpdate();
+  }));
+  calcUpdate();
+}
+function swatchResult(){
+  const c = k => num(ui.calc[k]);
+  return { sts: c('sw_w') ? +(c('sw_s') / c('sw_w') * 10).toFixed(1) : 0, rows: c('sw_h') ? +(c('sw_r') / c('sw_h') * 10).toFixed(1) : 0 };
+}
+
+/* ============ 게이지 기록 ============ */
+function changeTag(axis, pct){
+  if(pct === null) return '';
+  if(Math.abs(pct) < 1) return `<span class="tag">${axis} 변화 거의 없음</span>`;
+  return pct > 0 ? `<span class="tag s-hold">${axis} ${fmt(pct)}% 늘어남 ↔</span>` : `<span class="tag s-plan">${axis} ${fmt(-pct)}% 수축 →←</span>`;
+}
+function gaugeCell(label, s, r){
+  return `<div class="gcell"><div class="gl">${label}</div>${num(s) || num(r) ? `<div class="gv">${num(s) ? fmt(num(s))+'코' : '—'} × ${num(r) ? fmt(num(r))+'단' : '—'}</div>` : '<div class="gv muted">미기록</div>'}</div>`;
+}
+function gaugeItem(g){
+  const y = g.yarnId && byId('yarns', g.yarnId);
+  const n = g.needleId && byId('needles', g.needleId);
+  const used = db.projects.filter(p => p.gaugeId === g.id);
+  const ch = gaugeChange(g);
+  return `<div class="item gitem">
+    <div class="swatch" style="background:${y && y.color ? esc(y.color) : 'var(--blue-soft)'}">${y && y.color ? '' : '🧶'}</div>
+    <div class="main">
+      <div class="t">${esc(gaugeYarnName(g))}</div>
+      <div class="meta">
+        ${g.stitch ? `<span>🧵 ${esc(g.stitch)}</span>` : ''}
+        ${n ? `<span>🪡 ${esc(needleLabel(n))}</span>` : g.needleSize ? `<span>🪡 ${esc(g.needleSize)}mm</span>` : ''}
+        ${g.date ? `<span>📅 ${esc(g.date)}</span>` : ''}
+      </div>
+      <div class="gpair">
+        ${gaugeCell('블로킹 전', g.bSts, g.bRows)}
+        <div class="garrow">→</div>
+        ${gaugeCell('블로킹 후', g.aSts, g.aRows)}
+        <span class="small muted">/ 10cm</span>
+      </div>
+      ${ch.w !== null || ch.h !== null ? `<div class="row" style="gap:6px;margin-top:6px">${changeTag('가로', ch.w)}${changeTag('세로', ch.h)}</div>`
+        : `<div class="small muted" style="margin-top:6px">전·후를 모두 기록하면 수축/늘어남을 자동으로 알려 드려요.</div>`}
+      <div class="meta" style="margin-top:4px">
+        ${used.length ? `<span>📌 ${used.map(p => esc(p.name)).join(', ')}</span>` : ''}
+        ${g.notes ? `<span>💬 ${esc(g.notes)}</span>` : ''}
+      </div>
+    </div>
+    <div class="acts">
+      <button class="btn sm" data-action="useGauge" data-id="${g.id}" title="계산기에서 사용">🧮</button>
+      <button class="btn sm" data-action="editGauge" data-id="${g.id}">수정</button>
+      <button class="btn sm ghost danger" data-action="del" data-coll="gauges" data-id="${g.id}" title="삭제">✕</button>
+    </div></div>`;
+}
+function gaugeNeedleSize(g){
+  const n = g.needleId && byId('needles', g.needleId);
+  return n ? num(n.size) : num(g.needleSize);
+}
+function gaugeRow(g){
+  const n = g.needleId && byId('needles', g.needleId);
+  const size = gaugeNeedleSize(g);
+  const used = db.projects.filter(p => p.gaugeId === g.id);
+  const ch = gaugeChange(g);
+  return `<div class="item gitem">
+    <div class="swatch" style="background:var(--amber-soft);font-size:13px;font-weight:700;color:var(--amber)">${size ? fmt(size,2) : '?'}</div>
+    <div class="main">
+      <div class="t">${size ? fmt(size,2) + 'mm' : '바늘 미지정'} ${n && n.type ? `<span class="muted small">${esc(n.type)}</span>` : ''} ${size && usSize(size) ? `<span class="muted small">${usSize(size)}</span>` : ''}</div>
+      <div class="meta">
+        ${g.stitch ? `<span>🧵 ${esc(g.stitch)}</span>` : ''}
+        ${g.date ? `<span>📅 ${esc(g.date)}</span>` : ''}
+      </div>
+      <div class="gpair">
+        ${gaugeCell('블로킹 전', g.bSts, g.bRows)}
+        <div class="garrow">→</div>
+        ${gaugeCell('블로킹 후', g.aSts, g.aRows)}
+        <span class="small muted">/ 10cm</span>
+      </div>
+      ${ch.w !== null || ch.h !== null ? `<div class="row" style="gap:6px;margin-top:6px">${changeTag('가로', ch.w)}${changeTag('세로', ch.h)}</div>`
+        : `<div class="small muted" style="margin-top:6px">전·후를 모두 기록하면 수축/늘어남을 자동으로 알려 드려요.</div>`}
+      <div class="meta" style="margin-top:4px">
+        ${used.length ? `<span>📌 ${used.map(p => esc(p.name)).join(', ')}</span>` : ''}
+        ${g.notes ? `<span>💬 ${esc(g.notes)}</span>` : ''}
+      </div>
+    </div>
+    <div class="acts">
+      <button class="btn sm" data-action="useGauge" data-id="${g.id}" title="계산기에서 사용">🧮</button>
+      <button class="btn sm" data-action="editGauge" data-id="${g.id}">수정</button>
+      <button class="btn sm ghost danger" data-action="del" data-coll="gauges" data-id="${g.id}" title="삭제">✕</button>
+    </div></div>`;
+}
+function gaugeGroup(key, gs){
+  const y = key.startsWith('y:') && byId('yarns', key.slice(2));
+  const name = gaugeYarnName(gs[0]);
+  gs = gs.slice().sort((a,b) => (gaugeNeedleSize(a) || 99) - (gaugeNeedleSize(b) || 99));
+  const preset = y ? `data-yarnid="${y.id}"` : key.startsWith('t:') ? `data-yarntext="${esc(key.slice(2))}"` : '';
+  return `<div class="card list gcard">
+    <div class="ghead">
+      <div class="swatch" style="background:${y && y.color ? esc(y.color) : 'var(--blue-soft)'}">${y && y.color ? '' : '🧶'}</div>
+      <div class="main">
+        <div class="t">${esc(name)}</div>
+        <div class="meta">
+          ${y && y.weight ? `<span>${WEIGHT_SHORT[y.weight]}</span>` : ''}
+          ${y && y.fiber ? `<span>${esc(y.fiber)}</span>` : ''}
+          ${y && y.needleRec ? `<span>권장 ${esc(y.needleRec)}mm</span>` : ''}
+          <span>게이지 ${gs.length}개</span>
+        </div>
+      </div>
+      <button class="btn sm" data-action="editGauge" ${preset}>＋ 다른 바늘로 추가</button>
+    </div>
+    ${gs.map(gaugeRow).join('')}
+  </div>`;
+}
+function viewGauges(){
+  const q = ui.gSearch.trim().toLowerCase();
+  const list = db.gauges.filter(g => !q || [g.stitch, g.notes, gaugeYarnName(g), gaugeNeedleSize(g)].join(' ').toLowerCase().includes(q));
+  /* 실별로 묶기 (보관함 실 → id, 직접 입력 → 이름, 없음 → 미지정) */
+  const groups = new Map();
+  list.forEach(g => {
+    const k = g.yarnId && byId('yarns', g.yarnId) ? 'y:' + g.yarnId : g.yarnText ? 't:' + g.yarnText.trim() : 'none';
+    if(!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(g);
+  });
+  const ordered = [...groups.entries()].sort((a,b) => (a[0] === 'none') - (b[0] === 'none') || gaugeYarnName(a[1][0]).localeCompare(gaugeYarnName(b[1][0]), 'ko'));
+  return `
+  <div class="page-head"><div><h1>게이지 기록</h1><p class="sub">실마다 바늘 굵기별 게이지를 모아 두면 다음 작품에서 스와치를 줄일 수 있어요.</p></div>
+    <div class="row"><a class="btn hide-mobile" href="#/calc">🧮 계산기</a><button class="btn primary hide-mobile" data-action="editGauge">＋ 게이지 추가</button></div></div>
+  ${db.gauges.length ? `<div class="toolbar"><input class="search" type="search" placeholder="실·바늘 굵기·무늬·메모 검색" value="${esc(ui.gSearch)}" data-bind="gSearch"></div>` : ''}
+  ${list.length ? ordered.map(([k, gs]) => gaugeGroup(k, gs)).join('')
+    : `<div class="card empty"><div class="big">📏</div><p>${db.gauges.length ? '검색 결과가 없어요.' : '저장된 게이지가 없어요. 계산기의 「스와치 → 게이지」에서 바로 저장할 수도 있어요.'}</p><button class="btn primary" data-action="editGauge">＋ 게이지 추가</button></div>`}`;
+}
+function editGauge(id, preset){
+  const g = id ? byId('gauges', id) : null;
+  openForm(g ? '게이지 수정' : '게이지 추가', [
+    {key:'yarnId', label:'실 (보관함)', type:'select', options:[['','— 선택 안 함 —'], ...db.yarns.map(y => [y.id, yarnLabel(y)])]},
+    {key:'yarnText', label:'또는 실 이름 직접 입력', placeholder:'보관함에 없는 실'},
+    {key:'stitch', label:'무늬', placeholder:'예: 메리야스, 1×1 고무단'},
+    {key:'needleId', label:'바늘 (보관함)', type:'select', options:[['','— 선택 안 함 —'], ...db.needles.map(n => [n.id, needleLabel(n)])]},
+    {key:'needleSize', label:'또는 바늘 굵기 (mm)', type:'number'},
+    {key:'date', label:'측정일', type:'date'},
+    {type:'heading', label:'🧺 블로킹(세탁) 전 — 10cm당'},
+    {key:'bSts', label:'코 수', type:'number'},
+    {key:'bRows', label:'단 수', type:'number'},
+    {type:'heading', label:'💧 블로킹(세탁) 후 — 10cm당'},
+    {key:'aSts', label:'코 수', type:'number'},
+    {key:'aRows', label:'단 수', type:'number'},
+    {type:'html', html:'<div id="gChange" class="small muted"></div>'},
+    {key:'notes', label:'메모', type:'textarea', full:true},
+  ], g || Object.assign({date: today()}, preset), vals => {
+    if(g) Object.assign(g, vals); else db.gauges.push(Object.assign({id: uid()}, vals));
+    save(); toast(g ? '수정했어요' : '게이지를 저장했어요'); refresh();
+  }, vals => (num(vals.bSts) || num(vals.bRows) || num(vals.aSts) || num(vals.aRows)) ? '' : '블로킹 전이나 후 중 하나는 코·단 수를 입력해 주세요');
+  const f = $('#theForm');
+  const upd = () => {
+    const ch = gaugeChange({bSts:f.elements.bSts.value, bRows:f.elements.bRows.value, aSts:f.elements.aSts.value, aRows:f.elements.aRows.value});
+    $('#gChange').innerHTML = ch.w === null && ch.h === null ? '💡 전·후를 모두 입력하면 세탁 후 수축했는지 늘어났는지 바로 보여 드려요.'
+      : `세탁 후 변화: ${changeTag('가로', ch.w)} ${changeTag('세로', ch.h)}`;
+  };
+  ['bSts','bRows','aSts','aRows'].forEach(k => f.elements[k].addEventListener('input', upd)); upd();
+}
+
+/* ============ 보관함 ============ */
+function viewStash(){
+  const t = ui.stashTab;
+  return `
+  <div class="page-head"><div><h1>실·바늘 보관함</h1><p class="sub">가진 재료를 한눈에 보고, 프로젝트에 연결해 남은 양을 관리해요.</p></div>
+    <button class="btn primary hide-mobile" data-action="${t==='yarn'?'editYarn':'editNeedle'}">＋ ${t==='yarn'?'실':'바늘'} 추가</button></div>
+  <div class="seg" style="margin-bottom:6px">
+    <button class="${t==='yarn'?'active':''}" data-action="stashTab" data-tab="yarn">🧶 실 ${db.yarns.length}</button>
+    <button class="${t==='needle'?'active':''}" data-action="stashTab" data-tab="needle">🪡 바늘 ${db.needles.length}</button>
+  </div>
+  ${t === 'yarn' ? viewYarns() : viewNeedles()}`;
+}
+function viewYarns(){
+  const q = ui.ySearch.trim().toLowerCase();
+  const list = db.yarns.filter(y => (!ui.yWeight || y.weight === ui.yWeight) && (!q || [y.brand,y.name,y.colorName,y.fiber,y.location,y.notes].join(' ').toLowerCase().includes(q)));
+  const totalS = list.reduce((s,y)=>s+num(y.skeins),0), totalM = list.reduce((s,y)=>s+num(y.skeins)*num(y.meters),0), totalG = list.reduce((s,y)=>s+num(y.skeins)*num(y.grams),0);
+  return `
+  ${db.yarns.length ? `<div class="toolbar">
+    <input class="search" type="search" placeholder="브랜드·색·소재·보관 위치 검색" value="${esc(ui.ySearch)}" data-bind="ySearch">
+    <select data-bind="yWeight" style="width:auto"><option value="">모든 굵기</option>${WEIGHTS.map(([k,l]) => `<option value="${k}" ${ui.yWeight===k?'selected':''}>${l}</option>`).join('')}</select>
+  </div>
+  <p class="small muted" style="margin:-4px 0 12px">${list.length}종 · ${fmt(totalS)}볼 ${totalG ? '· '+fmt(totalG,0)+'g' : ''} ${totalM ? '· 약 '+fmt(totalM,0)+'m' : ''}</p>` : '<div style="height:12px"></div>'}
+  ${list.length ? `<div class="card list">${list.map(y => {
+    const used = yarnUsed(y.id), left = num(y.skeins) - used;
+    return `<div class="item">
+      <div class="swatch" style="background:${esc(y.color || '#ddd')}"></div>
+      <div class="main">
+        <div class="t">${esc(yarnLabel(y)) || '이름 없는 실'}</div>
+        <div class="meta">
+          ${y.weight ? `<span>${WEIGHT_SHORT[y.weight]}</span>` : ''}
+          ${y.fiber ? `<span>${esc(y.fiber)}</span>` : ''}
+          ${y.grams || y.meters ? `<span>${y.grams ? y.grams+'g' : ''}${y.grams && y.meters ? ' / ' : ''}${y.meters ? y.meters+'m' : ''}</span>` : ''}
+          ${y.needleRec ? `<span>권장 ${esc(y.needleRec)}mm</span>` : ''}
+          ${y.lot ? `<span>Lot ${esc(y.lot)}</span>` : ''}
+          ${y.location ? `<span>📦 ${esc(y.location)}</span>` : ''}
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div class="t">${fmt(num(y.skeins))}볼</div>
+        ${used ? `<div class="small ${left < 0 ? 'danger' : 'muted'}" style="${left<0?'color:#c0392b':''}">프로젝트 ${fmt(used)} · 남음 ${fmt(left)}</div>` : ''}
+      </div>
+      <div class="acts">
+        <button class="btn sm" data-action="editYarn" data-id="${y.id}">수정</button>
+        <button class="btn sm ghost danger" data-action="del" data-coll="yarns" data-id="${y.id}" title="삭제">✕</button>
+      </div></div>`;}).join('')}</div>`
+    : `<div class="card empty"><div class="big">🧺</div><p>${db.yarns.length ? '조건에 맞는 실이 없어요.' : '보관 중인 실을 등록해 보세요. 라벨에 적힌 정보(무게, 길이, 권장 바늘)를 옮겨 적으면 돼요.'}</p><button class="btn primary" data-action="editYarn">＋ 실 추가</button></div>`}`;
+}
+function viewNeedles(){
+  const list = db.needles.filter(n => !ui.nType || n.type === ui.nType).sort((a,b) => num(a.size) - num(b.size));
+  const types = [...new Set(db.needles.map(n => n.type).filter(Boolean))];
+  return `
+  ${types.length > 1 ? `<div class="chips" style="margin:12px 0 14px"><button class="chip ${!ui.nType?'active':''}" data-action="nType" data-v="">전체</button>${types.map(t => `<button class="chip ${ui.nType===t?'active':''}" data-action="nType" data-v="${esc(t)}">${esc(t)}</button>`).join('')}</div>` : '<div style="height:12px"></div>'}
+  ${list.length ? `<div class="card list">${list.map(n => {
+    const inUse = needleInUse(n.id);
+    return `<div class="item">
+      <div class="swatch" style="background:var(--amber-soft);font-size:13px;font-weight:700;color:var(--amber)">${fmt(num(n.size),2)}</div>
+      <div class="main">
+        <div class="t">${fmt(num(n.size),2)}mm ${esc(n.type || '')} ${usSize(n.size) ? `<span class="muted small">${usSize(n.size)}</span>` : ''}</div>
+        <div class="meta">
+          ${n.length ? `<span>길이 ${esc(n.length)}cm</span>` : ''}
+          ${n.material ? `<span>${esc(n.material)}</span>` : ''}
+          ${n.brand ? `<span>${esc(n.brand)}</span>` : ''}
+          ${num(n.qty) > 1 ? `<span>${n.qty}개</span>` : ''}
+          ${n.notes ? `<span>💬 ${esc(n.notes)}</span>` : ''}
+        </div>
+      </div>
+      ${inUse.length ? `<span class="tag s-active" title="${esc(inUse.map(p=>p.name).join(', '))}">사용 중</span>` : '<span class="tag s-done">사용 가능</span>'}
+      <div class="acts">
+        <button class="btn sm" data-action="editNeedle" data-id="${n.id}">수정</button>
+        <button class="btn sm ghost danger" data-action="del" data-coll="needles" data-id="${n.id}" title="삭제">✕</button>
+      </div></div>`;}).join('')}</div>`
+    : `<div class="card empty"><div class="big">🪡</div><p>등록된 바늘이 없어요. 굵기(mm)만 입력해도 돼요.</p><button class="btn primary" data-action="editNeedle">＋ 바늘 추가</button></div>`}
+  <details class="card" style="margin-top:16px"><summary style="cursor:pointer;font-weight:600">📐 바늘 굵기 환산표 (mm ↔ US)</summary>
+    <table class="ref" style="margin-top:10px"><tr><th>mm</th><th>US</th><th>mm</th><th>US</th><th>mm</th><th>US</th></tr>
+    ${Array.from({length: Math.ceil(US_SIZES.length/3)}, (_,i) => `<tr>${[0,1,2].map(j => { const s = US_SIZES[i + j*Math.ceil(US_SIZES.length/3)]; return s ? `<td>${s[0]}</td><td>${s[1]}</td>` : '<td></td><td></td>'; }).join('')}</tr>`).join('')}
+    </table></details>`;
+}
+function editYarn(id){
+  const y = id ? byId('yarns', id) : null;
+  openForm(y ? '실 수정' : '실 추가', [
+    {key:'brand', label:'브랜드', placeholder:'예: 바늘이야기'},
+    {key:'name', label:'실 이름', required:true, placeholder:'예: 메리노 울'},
+    {key:'colorName', label:'색 이름·번호', placeholder:'예: 버건디 #12'},
+    {key:'color', label:'색 (대략)', type:'color'},
+    {key:'weight', label:'굵기', type:'select', options:[['','— 선택 —'], ...WEIGHTS]},
+    {key:'fiber', label:'소재', placeholder:'예: 울 100%'},
+    {key:'grams', label:'한 볼 무게 (g)', type:'number'},
+    {key:'meters', label:'한 볼 길이 (m)', type:'number'},
+    {key:'skeins', label:'보유 수량 (볼)', type:'number', required:true, step:'0.5'},
+    {key:'needleRec', label:'권장 바늘 (mm)', placeholder:'예: 4~4.5'},
+    {key:'lot', label:'염색 로트(Lot) 번호'},
+    {key:'location', label:'보관 위치', placeholder:'예: 옷장 위 상자'},
+    {key:'notes', label:'메모', type:'textarea', full:true},
+  ], y || {skeins:1, color:'#c8a27a'}, vals => {
+    if(y) Object.assign(y, vals); else db.yarns.push(Object.assign({id: uid()}, vals));
+    save(); toast(y ? '수정했어요' : '실을 추가했어요'); ui.stashTab = 'yarn'; refresh();
+  });
+}
+function editNeedle(id){
+  const n = id ? byId('needles', id) : null;
+  openForm(n ? '바늘 수정' : '바늘 추가', [
+    {key:'size', label:'굵기 (mm)', type:'number', required:true, step:'0.25', placeholder:'4.0'},
+    {key:'type', label:'종류', type:'select', options: NEEDLE_TYPES.map(t => [t,t])},
+    {key:'length', label:'길이 (cm)', type:'number', placeholder:'줄바늘 80 등'},
+    {key:'material', label:'재질', type:'select', options:[['',''],['대나무','대나무'],['나무','나무'],['금속','금속'],['플라스틱','플라스틱'],['카본','카본'],['기타','기타']]},
+    {key:'brand', label:'브랜드'},
+    {key:'qty', label:'개수', type:'number', placeholder:'1'},
+    {key:'notes', label:'메모', type:'textarea', full:true},
+  ], n || {type:'줄바늘', qty:1}, vals => {
+    if(n) Object.assign(n, vals); else db.needles.push(Object.assign({id: uid()}, vals));
+    save(); toast(n ? '수정했어요' : '바늘을 추가했어요'); ui.stashTab = 'needle'; refresh();
+  });
+}
+
+/* ============ 파일 저장소 (IndexedDB: PDF처럼 큰 파일용) ============ */
+const idb = {
+  _db: null,
+  open(){
+    if(this._db) return Promise.resolve(this._db);
+    return new Promise((res, rej) => {
+      const r = indexedDB.open('knit-notes-files', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('files');
+      r.onsuccess = () => { this._db = r.result; res(r.result); };
+      r.onerror = () => rej(r.error);
+    });
+  },
+  async tx(mode, fn){
+    const d = await this.open();
+    return new Promise((res, rej) => {
+      const t = d.transaction('files', mode), s = t.objectStore('files');
+      const out = fn(s);
+      t.oncomplete = () => res(out && 'result' in out ? out.result : undefined);
+      t.onerror = () => rej(t.error);
+    });
+  },
+  put(id, rec){ return this.tx('readwrite', s => s.put(rec, id)); },
+  get(id){ return this.tx('readonly', s => s.get(id)); },
+  del(id){ return this.tx('readwrite', s => s.delete(id)); },
+  clear(){ return this.tx('readwrite', s => s.clear()); },
+  async all(){
+    const d = await this.open();
+    return new Promise((res, rej) => {
+      const out = {}, t = d.transaction('files'), c = t.objectStore('files').openCursor();
+      c.onsuccess = () => { const cur = c.result; if(cur){ out[cur.key] = cur.value; cur.continue(); } };
+      t.oncomplete = () => res(out); t.onerror = () => rej(t.error);
+    });
+  }
+};
+/* ---- 사진·미리보기도 큰 저장소에 (기록 저장소 5MB 한도 보호) ----
+   기록에는 "idb:<id>" 참조만 남기고, 실제 그림은 IndexedDB 'img:<id>' 에 둬요. */
+const imgCache = new Map();
+function isRef(v){ return typeof v === 'string' && v.startsWith('idb:'); }
+function imgTag(val, alt=''){
+  if(!val) return '';
+  if(isRef(val)){ const id = val.slice(4); return `<img data-idb="${id}" src="${imgCache.get(id) || 'data:image/gif;base64,R0lGODlhAQABAAAAACw='}" alt="${alt}">`; }
+  return `<img src="${val}" alt="${alt}">`;
+}
+async function storeImage(dataURL){
+  const id = uid();
+  await idb.put('img:' + id, {data: dataURL});
+  imgCache.set(id, dataURL);
+  return 'idb:' + id;
+}
+function deleteImage(ref){ if(isRef(ref)){ imgCache.delete(ref.slice(4)); idb.del('img:' + ref.slice(4)).catch(() => {}); } }
+async function hydrateImages(root=document){
+  for(const el of $$('img[data-idb]', root)){
+    const id = el.dataset.idb;
+    if(imgCache.has(id)){ el.src = imgCache.get(id); continue; }
+    const r = await idb.get('img:' + id).catch(() => null);
+    if(r){ imgCache.set(id, r.data); $$(`img[data-idb="${id}"]`).forEach(i => i.src = r.data); }
+  }
+}
+/* 예전 버전에서 기록 안에 직접 넣어 둔 사진·미리보기를 큰 저장소로 옮기기 */
+async function migrateImages(){
+  let changed = false;
+  try{
+    for(const p of db.projects) if(p.photo && p.photo.startsWith('data:')){ p.photo = await storeImage(p.photo); changed = true; }
+    for(const p of db.patterns) if(p.thumb && p.thumb.startsWith('data:')){ p.thumb = await storeImage(p.thumb); changed = true; }
+  }catch(e){ return; }
+  if(changed){ save(); refresh(); }
+}
+/* 미리보기가 없는 도안(백업 복원 직후 등)은 조용히 다시 만들기 */
+let thumbBusy = false;
+async function regenThumbs(){
+  if(thumbBusy) return; thumbBusy = true;
+  try{
+    for(const p of db.patterns){
+      if(!p.fileId || (p.thumb && (!isRef(p.thumb) || imgCache.has(p.thumb.slice(4)) || await idb.get('img:' + p.thumb.slice(4))))) continue;
+      const rec = await idb.get(p.fileId); if(!rec) continue;
+      try{
+        const t = p.fileType === 'pdf' ? (await pdfInfo(rec.blob)).thumb : await shrinkImage(rec.blob, 360);
+        p.thumb = await storeImage(t); save();
+        $$(`[data-pat-thumb="${p.id}"]`).forEach(el => { el.innerHTML = imgTag(p.thumb); });
+      }catch(e){ break; } /* 오프라인 등이면 다음 기회에 */
+    }
+  }finally{ thumbBusy = false; }
+}
+
+const blobToDataURL = b => new Promise(r => { const f = new FileReader(); f.onload = () => r(f.result); f.readAsDataURL(b); });
+const dataURLToBlob = async u => (await fetch(u)).blob();
+const fmtSize = b => b > 1048576 ? fmt(b/1048576,1) + 'MB' : fmt(b/1024,0) + 'KB';
+
+/* PDF.js는 도안을 처음 열 때만 불러와요 */
+const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+let pdfjsReady = null;
+function loadScript(src){ return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+function loadPdfJs(){
+  if(!pdfjsReady) pdfjsReady = loadScript(PDFJS + 'pdf.min.js')
+    .then(() => loadScript(PDFJS + 'pdf.worker.min.js'))
+    .then(() => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS + 'pdf.worker.min.js'; return window.pdfjsLib; })
+    .catch(e => { pdfjsReady = null; throw e; });
+  return pdfjsReady;
+}
+async function pdfInfo(blob){
+  const lib = await loadPdfJs();
+  const pdf = await lib.getDocument({data: new Uint8Array(await blob.arrayBuffer())}).promise;
+  const page = await pdf.getPage(1);
+  const vp0 = page.getViewport({scale: 1}), scale = 360 / vp0.width, vp = page.getViewport({scale});
+  const cv = document.createElement('canvas'); cv.width = vp.width; cv.height = vp.height;
+  await page.render({canvasContext: cv.getContext('2d'), viewport: vp}).promise;
+  const info = {pages: pdf.numPages, thumb: cv.toDataURL('image/jpeg', 0.7)};
+  pdf.destroy();
+  return info;
+}
+
+/* ============ 도안 보관함 ============ */
+const PATTERN_CATS = ['스웨터·풀오버','카디건','조끼','모자','목도리·숄','양말','장갑','가방','인형·소품','담요','기타'];
+function viewPatterns(){
+  const q = ui.patSearch.trim().toLowerCase();
+  const cats = [...new Set(db.patterns.map(p => p.category).filter(Boolean))];
+  const list = db.patterns
+    .filter(p => !ui.patCat || p.category === ui.patCat)
+    .filter(p => !q || [p.name, p.designer, p.category, p.notes, p.fileName].join(' ').toLowerCase().includes(q))
+    .slice().sort((a,b) => (b.lastOpened||b.created||0) - (a.lastOpened||a.created||0));
+  return `
+  <div class="page-head"><div><h1>도안 보관함</h1><p class="sub">PDF·사진 도안을 이 기기에 보관하고 바로 펼쳐 볼 수 있어요. 마지막으로 본 쪽도 기억해요.</p></div>
+    <button class="btn primary hide-mobile" data-action="editPattern">＋ 도안 추가</button></div>
+  ${db.patterns.length ? `<div class="toolbar"><input class="search" type="search" placeholder="도안 이름·디자이너·메모 검색" value="${esc(ui.patSearch)}" data-bind="patSearch"></div>
+    ${cats.length > 1 ? `<div class="chips" style="margin-bottom:16px"><button class="chip ${!ui.patCat?'active':''}" data-action="patCat" data-v="">전체</button>${cats.map(c => `<button class="chip ${ui.patCat===c?'active':''}" data-action="patCat" data-v="${esc(c)}">${esc(c)}</button>`).join('')}</div>` : ''}` : ''}
+  ${list.length ? `<div class="grid cols-3">${list.map(patternCard).join('')}</div>`
+    : `<div class="card empty"><div class="big">📖</div><p>${db.patterns.length ? '조건에 맞는 도안이 없어요.' : '갖고 있는 PDF 도안을 올려 두면 프로젝트를 뜨면서 바로 볼 수 있어요.'}</p><button class="btn primary" data-action="editPattern">＋ 도안 추가</button></div>`}`;
+}
+function patternCard(p){
+  const projects = db.projects.filter(x => x.patternId === p.id);
+  return `<div class="card pcard" ${p.fileId ? `data-action="openPattern" data-id="${p.id}"` : `data-action="editPattern" data-id="${p.id}"`}>
+    <div class="pthumb pat-thumb"><span class="pat-img" data-pat-thumb="${p.id}">${p.thumb ? imgTag(p.thumb) : `<span>${p.fileId ? '📄' : '🔗'}</span>`}</span>
+      ${p.fileId ? `<span class="pat-badge">${p.fileType === 'pdf' ? 'PDF' : '사진'}${p.pages ? ' · ' + p.pages + '쪽' : ''}</span>` : ''}</div>
+    <div class="pbody">
+      <div class="t">${esc(p.name)}</div>
+      <div class="small muted">${[p.designer, p.category].filter(Boolean).map(esc).join(' · ') || '&nbsp;'}</div>
+      ${projects.length ? `<div class="small muted">📌 ${projects.map(x => esc(x.name)).join(', ')}</div>` : ''}
+      <div class="row" style="margin-top:6px" data-stop>
+        ${p.fileId ? `<button class="btn sm primary" data-action="openPattern" data-id="${p.id}">📖 열기${p.marker && p.marker.on ? ` (📍${p.marker.page}쪽)` : p.lastPage > 1 ? ` (${p.lastPage}쪽부터)` : ''}</button>` : `<span class="small muted">파일 없음</span>`}
+        ${p.url ? `<a class="btn sm" href="${esc(p.url)}" target="_blank" rel="noopener" data-stop>🔗</a>` : ''}
+        <button class="btn sm" data-action="projectFromPattern" data-id="${p.id}" title="이 도안으로 프로젝트 시작">＋🧶</button>
+        <button class="btn sm" data-action="editPattern" data-id="${p.id}">수정</button>
+        <button class="btn sm ghost danger" data-action="del" data-coll="patterns" data-id="${p.id}" title="삭제">✕</button>
+      </div>
+    </div></div>`;
+}
+function editPattern(id){
+  const p = id ? byId('patterns', id) : null;
+  let file = null;
+  openForm(p ? '도안 수정' : '도안 추가', [
+    {type:'html', html:`<div class="field full"><label>도안 파일 (PDF 또는 사진)</label>
+      <label class="drop" id="patDrop"><input type="file" accept="application/pdf,image/*" id="patFile" hidden>
+        <span id="patFileTxt">${p && p.fileId ? `📄 ${esc(p.fileName || '저장된 파일')} · ${fmtSize(p.fileSize||0)} <span class="muted">(누르면 다른 파일로 바꿔요)</span>` : '📂 눌러서 파일 선택 또는 여기로 끌어다 놓기'}</span></label>
+      <span class="hint">파일은 이 기기 브라우저 안에만 보관돼요. 다른 기기로 옮기려면 설정의 백업을 이용하세요.</span></div>`},
+    {key:'name', label:'도안 이름', required:true, full:true, placeholder:'파일을 고르면 자동으로 채워져요'},
+    {key:'designer', label:'디자이너·출처', placeholder:'예: ○○ 니트 공방'},
+    {key:'category', label:'종류', type:'select', options:[['','— 선택 —'], ...PATTERN_CATS.map(c => [c,c])]},
+    {key:'url', label:'구매·판매 페이지 링크', full:true, placeholder:'https://'},
+    {key:'notes', label:'메모', type:'textarea', full:true, placeholder:'필요한 실·바늘, 사이즈 정보, 수정할 점 등'},
+  ], p || {}, async vals => {
+    const rec = p || {id: uid(), created: Date.now()};
+    Object.assign(rec, vals);
+    if(file){
+      toast('도안을 저장하는 중…');
+      const oldFile = rec.fileId;
+      rec.fileId = uid(); rec.fileName = file.name; rec.fileSize = file.size;
+      rec.fileType = file.type === 'application/pdf' || /\.pdf$/i.test(file.name) ? 'pdf' : 'image';
+      rec.lastPage = 1; rec.pages = 0; deleteImage(rec.thumb); rec.thumb = ''; rec.marker = null; rec.backedUp = '';
+      try{ await idb.put(rec.fileId, {blob: file, name: file.name, type: file.type}); }
+      catch(e){ toast('파일을 저장하지 못했어요. 저장 공간을 확인해 주세요.'); return; }
+      if(oldFile) idb.del(oldFile);
+      if(navigator.storage && navigator.storage.persist) navigator.storage.persist();
+      try{
+        if(rec.fileType === 'pdf'){ const info = await pdfInfo(file); rec.pages = info.pages; rec.thumb = await storeImage(info.thumb); }
+        else rec.thumb = await storeImage(await shrinkImage(file, 360));
+      }catch(e){ /* 미리보기 실패해도 파일은 저장됨 (오프라인 등) */ }
+    }
+    if(!p) db.patterns.push(rec);
+    save(); toast(p ? '수정했어요' : '도안을 보관했어요 📖'); refresh();
+  });
+  const inp = $('#patFile'), drop = $('#patDrop');
+  const pick = f => {
+    if(!f) return;
+    if(!(f.type === 'application/pdf' || /\.pdf$/i.test(f.name) || f.type.startsWith('image/'))) return toast('PDF나 사진 파일만 올릴 수 있어요');
+    file = f;
+    $('#patFileTxt').innerHTML = `✅ ${esc(f.name)} · ${fmtSize(f.size)}`;
+    const nameEl = $('#theForm').elements.name;
+    if(!nameEl.value.trim()) nameEl.value = f.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ');
+  };
+  inp.addEventListener('change', () => pick(inp.files[0]));
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+  drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); pick(e.dataTransfer.files[0]); });
+}
+
+/* ============ 도안 뷰어 ============ */
+const vw = {pdf:null, pattern:null, projectId:null, zoom:1, url:null, observer:null, saveT:null, cur:1};
+async function openViewer(patternId, projectId){
+  const p = byId('patterns', patternId); if(!p || !p.fileId) return;
+  const rec = await idb.get(p.fileId).catch(() => null);
+  if(!rec){ toast('이 기기에 도안 파일이 없어요. 백업에서 불러오거나 파일을 다시 올려 주세요.'); return; }
+  Object.assign(vw, {pattern: p, projectId: projectId || null, zoom: 1, cur: p.lastPage || 1});
+  if(vw.url) URL.revokeObjectURL(vw.url);
+  vw.url = URL.createObjectURL(rec.blob.type ? rec.blob : new Blob([rec.blob], {type: rec.type || 'application/pdf'}));
+  p.lastOpened = Date.now(); save();
+  const v = $('#viewer');
+  v.hidden = false; document.body.style.overflow = 'hidden';
+  keepAwake(true);
+  $('#vTitle').textContent = p.name;
+  $('#vOpen').href = vw.url;
+  renderViewerCounter();
+  renderMarkBar();
+  const pages = $('#vPages');
+  pages.innerHTML = `<div class="vmsg">도안을 펼치는 중… 📖</div>`;
+  if(vw.pdf){ vw.pdf.destroy(); vw.pdf = null; }
+  if(p.fileType !== 'pdf'){
+    $('#vPageInfo').textContent = '';
+    pages.innerHTML = `<div class="vpage vimgwrap" data-page="1"><img class="vimg" id="vImg" src="${vw.url}" alt="${esc(p.name)}"></div>`;
+    applyImgZoom();
+    $('#vImg').onload = () => { renderMarker(); if(p.marker && p.marker.on) scrollToMarker(true); };
+    return;
+  }
+  try{
+    const lib = await loadPdfJs();
+    vw.pdf = await lib.getDocument({data: new Uint8Array(await rec.blob.arrayBuffer())}).promise;
+    if(!p.pages){ p.pages = vw.pdf.numPages; save(); }
+    await buildPages();
+    if(p.marker && p.marker.on){ scrollToMarker(true); toast('📍 지난번에 뜨던 곳을 표시해 뒀어요'); }
+  }catch(e){
+    pages.innerHTML = `<div class="vmsg">이 화면에서 PDF를 펼치지 못했어요 (인터넷 연결이 필요해요).<br><br><a class="btn primary" href="${vw.url}" target="_blank" rel="noopener">브라우저 기본 뷰어로 열기</a></div>`;
+  }
+}
+async function buildPages(noScroll){
+  const pdf = vw.pdf, box = $('#vPages');
+  if(vw.observer) vw.observer.disconnect();
+  const first = await pdf.getPage(1);
+  const vp1 = first.getViewport({scale: 1});
+  const width = baseWidth() * vw.zoom;
+  const scale = width / vp1.width;
+  box.innerHTML = Array.from({length: pdf.numPages}, (_, i) =>
+    `<div class="vpage" data-page="${i+1}" style="width:${width}px;height:${vp1.height * scale}px"><span class="vnum">${i+1}</span></div>`).join('');
+  $('#vZoom').textContent = Math.round(vw.zoom * 100) + '%';
+  vw.observer = new IntersectionObserver(entries => entries.forEach(en => { if(en.isIntersecting) renderPage(en.target, scale); }), {root: box, rootMargin: '800px 0px'});
+  $$('.vpage', box).forEach(el => vw.observer.observe(el));
+  renderMarker();
+  if(!noScroll) goPage(vw.cur, true);
+}
+async function renderPage(el, scale){
+  if(el.dataset.done === String(scale)) return;
+  el.dataset.done = String(scale);
+  const page = await vw.pdf.getPage(+el.dataset.page);
+  const vp = page.getViewport({scale});
+  const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+  const cv = document.createElement('canvas');
+  cv.width = vp.width * dpr; cv.height = vp.height * dpr;
+  cv.style.width = vp.width + 'px'; cv.style.height = vp.height + 'px';
+  el.style.height = vp.height + 'px';
+  await page.render({canvasContext: cv.getContext('2d'), viewport: vp, transform: dpr !== 1 ? [dpr,0,0,dpr,0,0] : null}).promise;
+  el.querySelector('canvas')?.remove();
+  el.prepend(cv);
+}
+function goPage(n, instant){
+  const total = vw.pdf ? vw.pdf.numPages : 1;
+  n = Math.max(1, Math.min(total, n));
+  const el = $(`.vpage[data-page="${n}"]`); if(!el) return;
+  $('#vPages').scrollTo({top: el.offsetTop - 8, behavior: instant ? 'auto' : 'smooth'});
+  setCurPage(n);
+}
+function setCurPage(n){
+  vw.cur = n;
+  $('#vPageInfo').textContent = vw.pdf ? `${n} / ${vw.pdf.numPages}` : '';
+  clearTimeout(vw.saveT);
+  vw.saveT = setTimeout(() => { if(vw.pattern && vw.pattern.lastPage !== n){ vw.pattern.lastPage = n; save(); } }, 500);
+}
+function applyImgZoom(){
+  const w = $('.vimgwrap'); if(w) w.style.width = baseWidth() * vw.zoom + 'px';
+  $('#vZoom').textContent = Math.round(vw.zoom * 100) + '%';
+}
+
+/* ---------- 📍 지금 뜨는 곳 표시 (도안 위 형광 띠) ---------- */
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function pageCount(){ return vw.pdf ? vw.pdf.numPages : 1; }
+function mk(){ return vw.pattern && vw.pattern.marker; }
+function saveMarker(){ clearTimeout(vw.mT); vw.mT = setTimeout(save, 300); }
+function renderMarker(){
+  $$('.vmark, .vmark-shade').forEach(e => e.remove());
+  const m = mk();
+  renderMarkBar();
+  if(!m || !m.on) return;
+  const page = $(`.vpage[data-page="${m.page}"]`); if(!page) return;
+  page.insertAdjacentHTML('beforeend', `<div class="vmark-shade" style="height:${m.y * 100}%"></div>
+    <div class="vmark" style="top:${m.y * 100}%;height:${m.h * 100}%">
+      <span class="vmark-tag">📍 지금 여기</span><span class="vmark-grip" title="끌어서 높이 조절"></span></div>`);
+  bindMarkerDrag(page.querySelector('.vmark'), page);
+}
+function bindMarkerDrag(el, page){
+  let mode = null, startY = 0, start = null;
+  el.addEventListener('pointerdown', e => {
+    e.preventDefault(); e.stopPropagation();
+    mode = e.target.classList.contains('vmark-grip') ? 'resize' : 'move';
+    startY = e.clientY; start = {...mk()};
+    el.setPointerCapture(e.pointerId); el.classList.add('dragging');
+  });
+  el.addEventListener('pointermove', e => {
+    if(!mode) return;
+    const m = mk(), dy = (e.clientY - startY) / page.offsetHeight;
+    if(mode === 'move') m.y = clamp(start.y + dy, 0, 1 - m.h);
+    else m.h = clamp(start.h + dy, 0.008, 0.5 - 0);
+    el.style.top = m.y * 100 + '%'; el.style.height = m.h * 100 + '%';
+    const sh = page.querySelector('.vmark-shade'); if(sh) sh.style.height = m.y * 100 + '%';
+  });
+  const end = () => { if(!mode) return; mode = null; el.classList.remove('dragging'); saveMarker(); };
+  el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+}
+function placeMarker(pageNo, fy){
+  const old = mk() || {};
+  const h = old.h || 0.04;
+  vw.pattern.marker = {page: pageNo, y: clamp(fy - h / 2, 0, 1 - h), h, on: true, follow: !!old.follow};
+  renderMarker(); saveMarker();
+}
+function placeMarkerAtView(){
+  const box = $('#vPages'), target = box.scrollTop + box.clientHeight * 0.4;
+  let page = $('.vpage', box); if(!page) return;
+  for(const el of $$('.vpage', box)){ if(el.offsetTop <= target) page = el; else break; }
+  placeMarker(+page.dataset.page, clamp((target - page.offsetTop) / page.offsetHeight, 0, 1));
+}
+function moveMarker(dir){
+  const m = mk(); if(!m || !m.on) return;
+  let y = m.y + dir * m.h, page = m.page;
+  if(y + m.h > 1.0001){ if(page < pageCount()){ page++; y = 0.02; } else { y = 1 - m.h; toast('마지막 줄이에요'); } }
+  else if(y < -0.0001){ if(page > 1){ page--; y = 1 - m.h - 0.02; } else { y = 0; } }
+  const turned = page !== m.page;
+  m.y = y; m.page = page;
+  renderMarker(); saveMarker();
+  scrollToMarker(false, !turned);
+  if(turned) toast(`${page}쪽으로 넘어갔어요`);
+}
+function scrollToMarker(instant, onlyIfHidden){
+  const m = mk(); if(!m) return;
+  const page = $(`.vpage[data-page="${m.page}"]`); if(!page) return;
+  const box = $('#vPages');
+  const top = page.offsetTop + m.y * page.offsetHeight, bottom = top + m.h * page.offsetHeight;
+  if(onlyIfHidden && top > box.scrollTop + box.clientHeight * 0.15 && bottom < box.scrollTop + box.clientHeight * 0.85) return;
+  box.scrollTo({top: top - box.clientHeight * 0.35, behavior: instant ? 'auto' : 'smooth'});
+}
+function renderMarkBar(){
+  const m = mk(), on = m && m.on, hasProj = !!(vw.projectId && byId('projects', vw.projectId));
+  $('#vMarkBar').innerHTML = on ? `
+    <button class="mb" data-action="mMove" data-d="-1" aria-label="한 칸 위로">▲</button>
+    <button class="mb main" data-action="mMove" data-d="1" aria-label="한 칸 아래로">▼ 다음 줄</button>
+    <button class="mb" data-action="mGo" title="표시한 곳으로 이동">🎯</button>
+    ${hasProj ? `<button class="mb ${m.follow ? 'on' : ''}" data-action="mFollow" title="카운터 ＋/− 할 때 표시도 함께 이동">🔗 카운터 연동 ${m.follow ? '켜짐' : '꺼짐'}</button>` : ''}
+    <button class="mb" data-action="mToggle" title="표시 숨기기">숨기기</button>`
+    : `<button class="mb main" data-action="mToggle">📍 지금 뜨는 곳 표시하기</button>`;
+}
+$('#vPages').addEventListener('dblclick', e => {
+  const page = e.target.closest('.vpage'); if(!page || e.target.closest('.vmark')) return;
+  const r = page.getBoundingClientRect();
+  placeMarker(+page.dataset.page, (e.clientY - r.top) / r.height);
+});
+/* 100% = 화면 너비에 맞춤 (태블릿 가로 화면에서도 넓게, 최대 1400px) */
+function baseWidth(){ return Math.min($('#vPages').clientWidth - 40, 1400); }
+/* focal: 확대 중심점 {x,y} (vPages 기준 화면 좌표). 그 지점이 제자리에 남도록 스크롤 보정 */
+function setZoom(z, focal){
+  const box = $('#vPages'), oldZ = vw.zoom;
+  vw.zoom = Math.max(0.5, Math.min(4, Math.round(z * 100) / 100));
+  const k = vw.zoom / oldZ;
+  const f = focal || {x: box.clientWidth / 2, y: box.clientHeight / 2};
+  const cx = box.scrollLeft + f.x, cy = box.scrollTop + f.y;
+  const restore = () => { box.scrollLeft = cx * k - f.x; box.scrollTop = cy * k - f.y; };
+  if(vw.pattern.fileType !== 'pdf'){ applyImgZoom(); restore(); return; }
+  if(z === 1 && !focal){ const keep = vw.cur; buildPages().then(() => goPage(keep, true)); return; }
+  buildPages(true).then(restore);
+}
+
+/* ---------- 두 손가락으로 확대·축소 (태블릿) ---------- */
+(() => {
+  const box = $('#vPages');
+  let pinch = null;
+  const dist = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+  box.addEventListener('touchstart', e => {
+    if(e.touches.length !== 2 || e.target.closest('.vmark')) return;
+    const r = box.getBoundingClientRect();
+    pinch = {d0: dist(e.touches), x: (e.touches[0].clientX + e.touches[1].clientX) / 2 - r.left, y: (e.touches[0].clientY + e.touches[1].clientY) / 2 - r.top, k: 1};
+    box.style.transformOrigin = `${pinch.x}px ${pinch.y}px`;
+  }, {passive: true});
+  box.addEventListener('touchmove', e => {
+    if(!pinch || e.touches.length !== 2) return;
+    e.preventDefault();
+    pinch.k = Math.max(0.5 / vw.zoom, Math.min(4 / vw.zoom, dist(e.touches) / pinch.d0));
+    box.style.transform = `scale(${pinch.k})`;   /* 손을 떼기 전까지는 미리보기로 확대 */
+  }, {passive: false});
+  const end = () => {
+    if(!pinch) return;
+    const p = pinch; pinch = null;
+    box.style.transform = ''; box.style.transformOrigin = '';
+    if(Math.abs(p.k - 1) > 0.04) setZoom(vw.zoom * p.k, {x: p.x, y: p.y});
+  };
+  box.addEventListener('touchend', e => { if(e.touches.length < 2) end(); });
+  box.addEventListener('touchcancel', end);
+  /* PC: Ctrl + 마우스 휠로 확대 */
+  box.addEventListener('wheel', e => {
+    if(!e.ctrlKey) return; e.preventDefault();
+    const r = box.getBoundingClientRect();
+    clearTimeout(vw.wheelT);
+    vw.wheelK = (vw.wheelK || 1) * (e.deltaY < 0 ? 1.1 : 0.9);
+    vw.wheelT = setTimeout(() => { const k = vw.wheelK; vw.wheelK = 1; setZoom(vw.zoom * k, {x: e.clientX - r.left, y: e.clientY - r.top}); }, 120);
+  }, {passive: false});
+})();
+
+/* ---------- 도안 보는 동안 화면 꺼짐 방지 ---------- */
+let wakeLock = null;
+async function keepAwake(on){
+  try{
+    if(on && 'wakeLock' in navigator && db.settings.wake !== false && !document.hidden){ if(!wakeLock) wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); }
+    else if(!on && wakeLock){ await wakeLock.release(); wakeLock = null; }
+  }catch(e){ wakeLock = null; }
+}
+document.addEventListener('visibilitychange', () => { if(!document.hidden && !$('#viewer').hidden) keepAwake(true); });
+function toggleFullscreen(){
+  if(document.fullscreenElement) document.exitFullscreen();
+  else (document.documentElement.requestFullscreen || function(){ toast('이 브라우저는 전체 화면을 지원하지 않아요'); }).call(document.documentElement).catch?.(() => {});
+}
+function renderViewerCounter(){
+  const box = $('#vCounter');
+  const p = vw.projectId && byId('projects', vw.projectId), c = p && p.counters && p.counters[0];
+  if(!c){ box.innerHTML = ''; return; }
+  box.innerHTML = `<span class="small" title="${esc(p.name)}">${esc(c.name)}</span>
+    <button data-action="vCount" data-d="-1" aria-label="빼기">−</button><b>${c.value}${c.target ? `<small>/${c.target}</small>` : ''}</b>
+    <button class="plus" data-action="vCount" data-d="1" aria-label="더하기">＋</button>`;
+}
+function closeViewer(){
+  $('#viewer').hidden = true; document.body.style.overflow = '';
+  keepAwake(false);
+  if(document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  if(vw.observer) vw.observer.disconnect();
+  if(vw.pdf){ vw.pdf.destroy(); vw.pdf = null; }
+  $('#vPages').innerHTML = '';
+  if(vw.pattern){ vw.pattern.lastPage = vw.cur; save(); }
+  refresh();
+}
+$('#vPages').addEventListener('scroll', () => {
+  if(!vw.pdf) return;
+  const box = $('#vPages'), mid = box.scrollTop + box.clientHeight * 0.35;
+  let n = 1;
+  for(const el of $$('.vpage', box)){ if(el.offsetTop <= mid) n = +el.dataset.page; else break; }
+  if(n !== vw.cur) setCurPage(n);
+}, {passive: true});
+window.addEventListener('resize', () => { if(!$('#viewer').hidden && vw.pdf){ clearTimeout(vw.rt); vw.rt = setTimeout(() => setZoom(vw.zoom), 250); } });
+
+/* ============ 설정 ============ */
+function viewSettings(){
+  let size = 0; try{ size = (localStorage.getItem(KEY) || '').length; }catch(e){}
+  return `
+  <div class="page-head"><div><h1>설정·백업</h1><p class="sub">모든 데이터는 이 브라우저에만 저장돼요. 기기를 바꾸거나 브라우저 기록을 지우기 전에 꼭 백업해 주세요.</p></div></div>
+  <div class="grid cols-2">
+    <div class="card"><h2>💾 백업과 복원</h2>
+      <p class="small muted">백업은 <b>기록</b>과 <b>도안 PDF</b>를 따로 저장해요. 다른 기기에서는 두 종류 파일을 한꺼번에 골라 불러오면 돼요.</p>
+      <div class="bk-row"><div><b>① 기록</b><div class="small muted">프로젝트·실·바늘·게이지·사진 · ${db.settings.lastRecordBackup ? '마지막 ' + new Date(db.settings.lastRecordBackup).toLocaleDateString('ko-KR') : '아직 안 함'}</div></div>
+        <button class="btn primary" data-action="exportData">기록 백업</button></div>
+      <div class="bk-row"><div><b>② 도안 PDF</b><div class="small muted">${(() => { const all = db.patterns.filter(p => p.fileId), nw = all.filter(p => p.backedUp !== p.fileId); return `전체 ${all.length}개 · 백업 안 된 도안 ${nw.length}개`; })()} · 150MB씩 나눠 저장</div></div>
+        <div class="row"><button class="btn primary" data-action="exportFiles" data-new="1">새 도안만</button><button class="btn" data-action="exportFiles">전체</button></div></div>
+      <div class="row" style="margin-top:12px"><button class="btn" data-action="importData">📂 백업 불러오기 (여러 파일 선택 가능)</button></div>
+      <p class="small muted" style="margin-bottom:0">기록 저장소 약 ${fmt(size/1024/1024*2,1)}MB / 약 5MB<span id="storeInfo"></span></p>
+    </div>
+    <div class="card"><h2>🌓 화면 테마</h2>
+      <div class="seg">${[['auto','자동'],['light','밝게'],['dark','어둡게']].map(([k,l]) => `<button class="${(db.settings.theme||'auto')===k?'active':''}" data-action="setTheme" data-v="${k}">${l}</button>`).join('')}</div>
+    </div>
+    <div class="card"><h2>📱 태블릿 앱으로 쓰기</h2>
+      ${isStandalone() ? `<p class="small" style="margin-top:0">✅ 앱으로 설치되어 실행 중이에요.${swReady ? ' 인터넷 없이도 도안을 펼칠 수 있어요.' : ''}</p>`
+        : `<p class="small muted" style="margin-top:0">홈 화면에 설치하면 주소창 없이 앱처럼 열리고, 인터넷 없이도 도안을 볼 수 있어요.</p>
+           <button class="btn primary" data-action="installApp">📲 앱으로 설치</button>
+           ${location.protocol === 'file:' ? '<p class="small muted">※ 지금은 파일로 열려 있어서 설치할 수 없어요. 인터넷 주소(https)로 접속해야 해요.</p>' : ''}`}
+      <div class="bk-row" style="margin-top:12px"><div><b>도안 보는 동안 화면 켜 두기</b><div class="small muted">뜨개질 중에 화면이 꺼지지 않게 해요</div></div>
+        <button class="btn ${db.settings.wake === false ? '' : 'primary'}" data-action="toggleWake">${db.settings.wake === false ? '꺼짐' : '켜짐'}</button></div>
+    </div>
+    <div class="card"><h2>✨ 예시 데이터</h2><p class="small muted">기능을 둘러볼 수 있게 예시 프로젝트·실·바늘·게이지를 추가해요. 기존 데이터는 그대로 남아요.</p><button class="btn" data-action="loadSample">예시 데이터 추가</button></div>
+    <div class="card"><h2>⚠️ 전체 삭제</h2><p class="small muted">모든 프로젝트·실·바늘·게이지를 지워요. 되돌릴 수 없으니 먼저 백업하세요.</p><button class="btn danger" data-action="wipe">모든 데이터 삭제</button></div>
+  </div>`;
+}
+
+/* ============ 폼 (모달) ============ */
+let formCtx = null;
+function fieldHTML(f, v){
+  if(f.type === 'heading') return `<div class="field full form-heading">${f.label}</div>`;
+  if(f.type === 'html') return `<div class="field full">${f.html}</div>`;
+  const val = v[f.key];
+  const req = f.required ? 'required' : '';
+  let input = '';
+  switch(f.type){
+    case 'select': input = `<select name="${f.key}">${f.options.map(([k,l]) => `<option value="${esc(k)}" ${String(val ?? '') === String(k) ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>`; break;
+    case 'textarea': input = `<textarea name="${f.key}" placeholder="${esc(f.placeholder||'')}">${esc(val)}</textarea>`; break;
+    case 'number': input = `<input type="number" inputmode="decimal" step="${f.step||'any'}" min="0" name="${f.key}" value="${esc(val)}" placeholder="${esc(f.placeholder||'')}" ${req}>`; break;
+    case 'date': input = `<input type="date" name="${f.key}" value="${esc(val)}">`; break;
+    case 'color': input = `<input type="color" name="${f.key}" value="${esc(val || '#cccccc')}">`; break;
+    case 'checks': input = f.options.length ? `<div class="checklist">${f.options.map(([k,l]) => `<label><input type="checkbox" name="${f.key}" value="${k}" ${(val||[]).includes(k)?'checked':''}> ${esc(l)}</label>`).join('')}</div>` : `<span class="hint">${f.emptyText}</span>`; break;
+    case 'yarnUses':
+      if(!db.yarns.length){ input = `<span class="hint">보관함에 등록된 실이 없어요. 실·바늘 보관함에서 먼저 추가하세요.</span>`; break; }
+      input = `<div id="yuseList">${(val||[]).map(u => yuseRow(u, f.pid)).join('')}</div><button type="button" class="btn sm" data-action="addYuse" data-pid="${f.pid||''}">＋ 실 추가</button>`; break;
+    case 'image': input = `<div class="row"><input type="file" accept="image/*" data-img="${f.key}"><input type="hidden" name="${f.key}" value="${esc(val||'')}">
+      <span id="imgPrevWrap" style="width:64px;height:64px;border-radius:10px;overflow:hidden;${val?'':'display:none'}">${val ? imgTag(val) : '<img alt="">'}</span>
+      ${val ? `<button type="button" class="btn sm ghost" data-action="clearImg">사진 지우기</button>` : ''}</div><span class="hint">사진은 저장 공간을 아끼기 위해 자동으로 줄여서 저장해요.</span>`; break;
+    default: input = `<input type="text" name="${f.key}" value="${esc(val)}" placeholder="${esc(f.placeholder||'')}" ${req}>`;
+  }
+  return `<div class="field ${f.full?'full':''}"><label>${f.label}${f.required?' <span style="color:var(--accent)">*</span>':''}</label>${input}${f.hint ? `<span class="hint">${f.hint}</span>` : ''}</div>`;
+}
+function yuseRow(u, pid){
+  return `<div class="yuse"><select name="yu_yarn">${db.yarns.map(y => {
+    const left = num(y.skeins) - yarnUsed(y.id, pid);
+    return `<option value="${y.id}" ${u.yarnId===y.id?'selected':''}>${esc(yarnLabel(y))} (남음 ${fmt(left)}볼)</option>`;}).join('')}</select>
+    <input type="number" step="0.5" min="0" name="yu_sk" value="${esc(u.skeins ?? 1)}" aria-label="볼 수" title="볼 수"><button type="button" class="btn sm ghost" data-action="rmRow" aria-label="삭제">✕</button></div>`;
+}
+function openForm(title, fields, values, onSave, validate){
+  formCtx = {fields, onSave};
+  const dlg = $('#dlg');
+  dlg.innerHTML = `<form method="dialog" id="theForm" novalidate>
+    <div class="dlg-head"><h2>${title}</h2><button type="button" class="icon-btn" data-action="closeDlg" aria-label="닫기">✕</button></div>
+    <div class="dlg-body"><div class="form-grid">${fields.map(f => fieldHTML(f, values || {})).join('')}</div></div>
+    <div class="dlg-foot"><button type="button" class="btn" data-action="closeDlg">취소</button><button type="submit" class="btn primary">저장</button></div>
+  </form>`;
+  dlg.showModal();
+  hydrateImages(dlg);
+  const first = $('input[type=text],input[type=number]', dlg); if(first && window.innerWidth > 820) first.focus();
+  $('#theForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const form = e.target;
+    for(const f of fields){
+      if(f.required){ const el = form.elements[f.key]; if(el && !String(el.value).trim()){ el.focus(); el.style.borderColor = 'var(--accent)'; toast(`'${f.label}'을(를) 입력해 주세요`); return; } }
+    }
+    const vals = {};
+    fields.forEach(f => {
+      if(!f.key) return;
+      if(f.type === 'checks') vals[f.key] = $$(`input[name="${f.key}"]:checked`, form).map(i => i.value);
+      else if(f.type === 'yarnUses'){
+        const ys = $$('[name=yu_yarn]', form), ss = $$('[name=yu_sk]', form);
+        vals[f.key] = ys.map((s,i) => ({yarnId: s.value, skeins: num(ss[i].value)})).filter(u => u.yarnId);
+      }
+      else if(form.elements[f.key]) vals[f.key] = form.elements[f.key].value.trim();
+    });
+    const err = validate && validate(vals);
+    if(err) return toast(err);
+    dlg.close();
+    onSave(vals);
+  });
+  $$('[data-img]', dlg).forEach(inp => inp.addEventListener('change', async () => {
+    const file = inp.files[0]; if(!file) return;
+    const data = await shrinkImage(file, 700);
+    form_set(inp.dataset.img, data);
+  }));
+}
+function form_set(key, data){
+  const dlg = $('#dlg'); dlg.querySelector(`[name="${key}"]`).value = data;
+  const w = $('#imgPrevWrap', dlg); if(!w) return;
+  w.innerHTML = data ? `<img src="${data}" alt="">` : ''; w.style.display = data ? '' : 'none';
+}
+function shrinkImage(file, max){
+  return new Promise(res => {
+    const r = new FileReader();
+    r.onload = () => { const img = new Image(); img.onload = () => {
+      const s = Math.min(1, max / Math.max(img.width, img.height));
+      const cv = document.createElement('canvas'); cv.width = img.width * s; cv.height = img.height * s;
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      res(cv.toDataURL('image/jpeg', 0.75));
+    }; img.src = r.result; };
+    r.readAsDataURL(file);
+  });
+}
+
+/* ============ 토스트 + 되돌리기 ============ */
+let toastTimer, undoFn = null;
+function toast(msg, btnText, fn){
+  $('#toastMsg').textContent = msg;
+  const b = $('#toastBtn'); b.textContent = btnText || ''; b.style.display = btnText ? '' : 'none';
+  undoFn = fn || null;
+  $('#toast').classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => $('#toast').classList.remove('show'), btnText ? 5000 : 2200);
+}
+$('#toastBtn').onclick = () => { if(undoFn) undoFn(); undoFn = null; $('#toast').classList.remove('show'); };
+
+/* ============ 액션 ============ */
+const NAMES = {projects:'프로젝트를', patterns:'도안을', gauges:'게이지를', yarns:'실을', needles:'바늘을'};
+const actions = {
+  editProject: d => editProject(d.id), editGauge: d => editGauge(d.id, d.yarnid || d.yarntext ? {yarnId: d.yarnid || '', yarnText: d.yarntext || ''} : undefined), editYarn: d => editYarn(d.id), editNeedle: d => editNeedle(d.id),
+  closeDlg: () => $('#dlg').close(),
+  toggleTheme: () => { const o = ['auto','light','dark']; db.settings.theme = o[(o.indexOf(db.settings.theme||'auto') + 1) % 3]; save(); applyTheme(); refresh(); toast('테마: ' + {auto:'시스템 설정 따라가기',light:'밝게',dark:'어둡게'}[db.settings.theme]); },
+  setTheme: d => { db.settings.theme = d.v; save(); applyTheme(); refresh(); },
+  pFilter: d => { ui.pFilter = d.v; refresh(); },
+  nType: d => { ui.nType = d.v; refresh(); },
+  stashTab: d => { ui.stashTab = d.tab; if(location.hash !== '#/stash') location.hash = '#/stash'; else refresh(); },
+  calcTab: d => { ui.calcTab = d.v; refresh(); },
+  clearCalc: () => { ui.calc = {}; refresh(); },
+  del: d => {
+    const coll = db[d.coll], idx = coll.findIndex(x => x.id === d.id); if(idx < 0) return;
+    const item = coll[idx];
+    if(d.coll === 'projects' && !confirm(`'${item.name}' 프로젝트를 삭제할까요?`)) return;
+    if(d.coll === 'patterns' && !confirm(`'${item.name}' 도안을 삭제할까요?${item.fileId ? '\n보관된 파일도 함께 지워져요.' : ''}`)) return;
+    coll.splice(idx, 1); save();
+    toast(`${NAMES[d.coll]} 삭제했어요`, '되돌리기', () => { coll.splice(idx, 0, item); save(); refresh(); });
+    /* 되돌리기 시간이 지나면 실제 파일도 정리 */
+    if(d.coll === 'patterns') setTimeout(() => { if(!byId('patterns', item.id)){ if(item.fileId) idb.del(item.fileId); deleteImage(item.thumb); } }, 6500);
+    if(d.coll === 'projects' && item.photo) setTimeout(() => { if(!byId('projects', item.id)) deleteImage(item.photo); }, 6500);
+    if(d.coll === 'projects' && location.hash.startsWith('#/project/')) location.hash = '#/projects'; else refresh();
+  },
+  count: d => {
+    const p = byId('projects', d.pid), c = p && (p.counters||[]).find(x => x.id === d.cid); if(!c) return;
+    c.value = Math.max(0, c.value + num(d.d)); p.updated = Date.now(); save();
+    if(navigator.vibrate) navigator.vibrate(8);
+    if(c.target && c.value === c.target && num(d.d) > 0) toast(`🎯 '${c.name}' 목표 ${c.target}에 도달했어요!`);
+    else if(num(c.repeat) && c.value % num(c.repeat) === 0 && num(d.d) > 0) toast(`🔁 무늬 반복 한 번 완료!`);
+    refresh();
+  },
+  addCounter: d => counterForm(d.pid), editCounter: d => counterForm(d.pid, d.cid),
+  finishProject: d => { const p = byId('projects', d.id); p.status = 'done'; p.progress = 100; p.end = p.end || today(); p.updated = Date.now(); save(); toast('🎉 완성을 축하해요!'); refresh(); },
+  saveSwatch: d => { const r = swatchResult(); if(!r.sts && !r.rows) return toast('먼저 스와치 값을 입력해 주세요');
+    if(d.id){ const g = byId('gauges', d.id); if(d.when === 'a'){ g.aSts = r.sts; g.aRows = r.rows; } else { g.bSts = r.sts; g.bRows = r.rows; } save(); toast(`'${gaugeYarnName(g)}' 게이지에 ${d.when === 'a' ? '블로킹 후' : '블로킹 전'} 값으로 저장했어요`); return; }
+    editGauge(null, d.when === 'a' ? {aSts: r.sts, aRows: r.rows} : {bSts: r.sts, bRows: r.rows}); },
+  pickSwatchTarget: (d, el) => { const box = $('#swTarget'); box.style.display = box.style.display === 'none' ? '' : 'none'; },
+  useSwatch: () => { const r = swatchResult(); if(!r.sts && !r.rows) return toast('먼저 스와치 값을 입력해 주세요'); ui.calc.g_s = r.sts; ui.calc.g_r = r.rows; ui.calcTab = 'size'; refresh(); },
+  useGauge: d => { const v = gaugeVals(byId('gauges', d.id)); ui.calc.g_s = ui.calc.cv_ms = ui.calc.m_gs = v.sts || ''; ui.calc.g_r = ui.calc.cv_mr = ui.calc.m_gr = v.rows || ''; ui.calcTab = 'size'; location.hash = '#/calc'; toast(`${v.after ? '블로킹 후' : '블로킹 전'} 게이지를 불러왔어요`); },
+  addYuse: d => { $('#yuseList').insertAdjacentHTML('beforeend', yuseRow({yarnId: db.yarns[0].id, skeins:1}, d.pid)); },
+  rmRow: (d, el) => el.closest('.yuse').remove(),
+  clearImg: () => form_set('photo', ''),
+  /* 기록 백업: 프로젝트·실·바늘·게이지·도안 정보 + 프로젝트 사진 (도안 PDF 제외, 가벼움) */
+  exportData: async () => {
+    const images = {};
+    for(const p of db.projects) if(isRef(p.photo)){ const r = await idb.get('img:' + p.photo.slice(4)).catch(() => null); if(r) images[p.photo.slice(4)] = r.data; }
+    const blob = new Blob([JSON.stringify({...db, kind:'knit-notes', images})], {type:'application/json'});
+    downloadBlob(blob, `뜨개노트-기록-${today()}.json`);
+    db.settings.lastRecordBackup = Date.now(); save(); refresh();
+    toast(`기록 백업을 저장했어요 (${fmtSize(blob.size)})`);
+  },
+  /* 도안 PDF 백업: 약 150MB씩 나눠서 여러 파일로. onlyNew면 지난 백업 이후 추가·교체된 도안만 */
+  exportFiles: async d => {
+    const onlyNew = d.new === '1';
+    const targets = db.patterns.filter(p => p.fileId && (!onlyNew || p.backedUp !== p.fileId));
+    if(!targets.length) return toast(onlyNew ? '새로 백업할 도안이 없어요 👍' : '보관된 도안 파일이 없어요');
+    const LIMIT = 150 * 1048576;
+    const packs = []; let cur = [], size = 0;
+    for(const p of targets){
+      const sz = p.fileSize || 0;
+      if(cur.length && size + sz > LIMIT){ packs.push(cur); cur = []; size = 0; }
+      cur.push(p); size += sz;
+    }
+    if(cur.length) packs.push(cur);
+    if(packs.length > 1 && !confirm(`도안 ${targets.length}개를 파일 ${packs.length}개로 나눠 저장해요.\n브라우저가 "여러 파일 다운로드 허용"을 물으면 허용해 주세요.`)) return;
+    let n = 0;
+    for(const [i, pack] of packs.entries()){
+      toast(`도안 백업 만드는 중… (${i + 1}/${packs.length})`);
+      const files = {};
+      for(const p of pack){
+        const r = await idb.get(p.fileId).catch(() => null);
+        if(r){ files[p.fileId] = {name: r.name, type: r.type, data: await blobToDataURL(r.blob)}; n++; }
+      }
+      const blob = new Blob([JSON.stringify({kind:'knit-files', created: Date.now(), files})], {type:'application/json'});
+      downloadBlob(blob, `뜨개노트-도안${onlyNew ? '-새도안' : ''}-${today()}${packs.length > 1 ? `-${i + 1}of${packs.length}` : ''}.json`);
+      pack.forEach(p => { if(files[p.fileId]) p.backedUp = p.fileId; });
+      await new Promise(r => setTimeout(r, 800));
+    }
+    db.settings.lastFileBackup = Date.now(); save(); refresh();
+    toast(`도안 ${n}개를 백업했어요`);
+  },
+  importData: () => $('#importFile').click(),
+  wipe: async () => { if(confirm('정말 모든 데이터를 삭제할까요? 보관한 도안 파일도 모두 지워지고 되돌릴 수 없어요.')){ db = blank(); save(); await idb.clear().catch(() => {}); applyTheme(); toast('모두 삭제했어요'); location.hash = '#/home'; refresh(); } },
+  editPattern: d => editPattern(d.id),
+  projectFromPattern: d => { const pt = byId('patterns', d.id); editProject(null, {patternId: pt.id, name: pt.name}); },
+  openPattern: d => openViewer(d.id, d.pid),
+  patCat: d => { ui.patCat = d.v; refresh(); },
+  closeViewer: () => closeViewer(),
+  vPage: d => { if(vw.pdf) goPage(vw.cur + num(d.d)); },
+  vZoom: d => setZoom(num(d.d) ? vw.zoom + num(d.d) : 1),
+  vCount: d => {
+    const p = byId('projects', vw.projectId), c = p && p.counters[0]; if(!c) return;
+    actions.count({pid: p.id, cid: c.id, d: d.d});
+    renderViewerCounter();
+    const m = mk(); if(m && m.on && m.follow) moveMarker(num(d.d) > 0 ? 1 : -1);
+  },
+  mToggle: () => {
+    const m = mk();
+    if(m && m.on){ m.on = false; renderMarker(); saveMarker(); return; }
+    if(m && $(`.vpage[data-page="${m.page}"]`)){ m.on = true; renderMarker(); saveMarker(); scrollToMarker(false); }
+    else placeMarkerAtView();
+    toast('띠를 끌어 옮기고, 아래 손잡이로 높이를 맞추세요. 도안을 두 번 탭해도 옮겨져요.');
+  },
+  mMove: d => moveMarker(num(d.d)),
+  mGo: () => scrollToMarker(false),
+  vFull: () => toggleFullscreen(),
+  toggleWake: () => { db.settings.wake = db.settings.wake === false; save(); refresh(); },
+  installApp: async () => {
+    if(!deferredInstall) return toast('브라우저 메뉴(⋮)에서 "홈 화면에 추가" 또는 "앱 설치"를 눌러 주세요');
+    deferredInstall.prompt(); await deferredInstall.userChoice.catch(() => {}); deferredInstall = null; refresh();
+  },
+  mFollow: () => { const m = mk(); m.follow = !m.follow; saveMarker(); renderMarkBar(); toast(m.follow ? '카운터를 ＋하면 표시도 한 줄 내려가요' : '카운터 연동을 껐어요'); },
+  loadSample: () => { loadSample(); toast('예시 데이터를 추가했어요 ✨'); refresh(); },
+};
+function counterForm(pid, cid){
+  const p = byId('projects', pid); const c = cid && p.counters.find(x => x.id === cid);
+  openForm(c ? '카운터 설정' : '카운터 추가', [
+    {key:'name', label:'이름', required:true, placeholder:'예: 단, 코, 무늬 반복, 소매'},
+    {key:'value', label:'현재 값', type:'number', step:'1'},
+    {key:'target', label:'목표 값 (선택)', type:'number', step:'1', hint:'도달하면 알려 드려요'},
+    {key:'repeat', label:'무늬 반복 단 수 (선택)', type:'number', step:'1', hint:'예: 8단마다 꽈배기 → 8'},
+  ], c || {name: p.counters && p.counters.length ? '무늬 반복' : '단', value:0}, vals => {
+    const v = {name: vals.name, value: Math.max(0, Math.round(num(vals.value))), target: Math.round(num(vals.target)), repeat: Math.round(num(vals.repeat))};
+    if(c) Object.assign(c, v); else (p.counters = p.counters || []).push(Object.assign({id: uid()}, v));
+    save(); refresh();
+  });
+  if(c){ $('.dlg-foot').insertAdjacentHTML('afterbegin', `<button type="button" class="btn ghost danger" style="margin-right:auto" id="delCounter">카운터 삭제</button>`);
+    $('#delCounter').onclick = () => { const i = p.counters.indexOf(c); p.counters.splice(i,1); save(); $('#dlg').close(); refresh();
+      toast('카운터를 삭제했어요', '되돌리기', () => { p.counters.splice(i,0,c); save(); refresh(); }); }; }
+}
+document.addEventListener('click', e => {
+  if(e.target.closest('a[target="_blank"]')) return; /* 외부 링크·새 탭 열기는 그대로 */
+  const a = e.target.closest('[data-action]');
+  if(a){ e.preventDefault(); e.stopPropagation(); actions[a.dataset.action] && actions[a.dataset.action](a.dataset, a); return; }
+  const h = e.target.closest('[data-href]');
+  if(h && !e.target.closest('[data-stop]')) location.hash = h.dataset.href;
+});
+$('#dlg').addEventListener('click', e => { if(e.target === $('#dlg')) $('#dlg').close(); });
+function bindInputs(){
+  $$('[data-bind]').forEach(el => el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
+    ui[el.dataset.bind] = el.value;
+    const pos = el.selectionStart; refresh();
+    const again = $(`[data-bind="${el.dataset.bind}"]`); if(again && el.tagName !== 'SELECT'){ again.focus(); try{ again.setSelectionRange(pos,pos); }catch(e){} }
+  }));
+  $$('[data-action-input]').forEach(el => {
+    const p = byId('projects', el.dataset.pid);
+    let t;
+    el.addEventListener('input', () => {
+      if(el.dataset.actionInput === 'progress'){ p.progress = num(el.value); el.previousElementSibling.lastElementChild.textContent = p.progress + '%'; }
+      else p.notes = el.value;
+      clearTimeout(t); t = setTimeout(() => { p.updated = Date.now(); save(); }, 400);
+    });
+  });
+}
+document.addEventListener('keydown', e => {
+  if(!$('#viewer').hidden){
+    if(e.key === 'Escape'){ e.preventDefault(); closeViewer(); }
+    else if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); actions.vPage({d: 1}); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); actions.vPage({d: -1}); }
+    else if(vw.projectId && (e.key === ' ' || e.key === '+' || e.key === '=')){ e.preventDefault(); actions.vCount({d: 1}); }
+    else if(vw.projectId && e.key === '-'){ e.preventDefault(); actions.vCount({d: -1}); }
+    return;
+  }
+  if(!location.hash.startsWith('#/project/') || $('#dlg').open) return;
+  if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+  if(e.key === ' ' || e.key === '+' || e.key === '='){
+    e.preventDefault();
+    const p = byId('projects', location.hash.split('/')[2]); const c = p && p.counters && p.counters[0];
+    if(c) actions.count({pid: p.id, cid: c.id, d: 1});
+  }
+  if(e.key === '-'){ const p = byId('projects', location.hash.split('/')[2]); const c = p && p.counters && p.counters[0]; if(c) actions.count({pid: p.id, cid: c.id, d: -1}); }
+});
+function downloadBlob(blob, name){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+/* 기록 백업 + 도안 백업 파일(여러 개)을 한꺼번에 골라도 돼요 */
+$('#importFile').addEventListener('change', async e => {
+  const list = [...e.target.files]; e.target.value = '';
+  if(!list.length) return;
+  const parsed = [];
+  for(const f of list){
+    try{ parsed.push(JSON.parse(await f.text())); }catch(err){ toast(`'${f.name}'은(는) 백업 파일이 아니에요`); return; }
+  }
+  const mains = parsed.filter(d => d.projects && d.yarns), packs = parsed.filter(d => d.kind === 'knit-files' && d.files);
+  if(!mains.length && !packs.length) return toast('올바른 백업 파일이 아니에요');
+  if(mains.length > 1) return toast('기록 백업 파일은 한 번에 하나만 골라 주세요');
+  let restoredFiles = 0;
+  const putFiles = async files => {
+    for(const [id, f] of Object.entries(files)){
+      try{ await idb.put(id, {blob: await dataURLToBlob(f.data), name: f.name, type: f.type}); restoredFiles++; }catch(err){}
+    }
+  };
+  if(mains.length){
+    if(!confirm('기록 백업을 불러오면 지금 기록이 백업 내용으로 바뀌어요. 계속할까요?')) return;
+    const d = mains[0];
+    const files = d.files || {}, images = d.images || {};
+    delete d.files; delete d.images; delete d.kind;
+    const old = db;
+    db = migrate(Object.assign(blank(), d));
+    toast('불러오는 중…');
+    for(const [id, data] of Object.entries(images)){ await idb.put('img:' + id, {data}).catch(() => {}); imgCache.set(id, data); }
+    await putFiles(files);           /* 예전 형식(도안 포함 단일 백업) */
+    const keep = new Set(db.patterns.map(p => p.fileId).filter(Boolean));
+    old.patterns.forEach(p => { if(p.fileId && !keep.has(p.fileId)) idb.del(p.fileId).catch(() => {}); });
+  }
+  if(packs.length){ toast('도안 파일을 복원하는 중…'); for(const pk of packs) await putFiles(pk.files); }
+  /* 다른 기기에서 만든 미리보기 참조는 이 기기에 없으니 다시 만들게 함 */
+  for(const p of db.patterns) if(isRef(p.thumb) && !imgCache.has(p.thumb.slice(4)) && !(await idb.get('img:' + p.thumb.slice(4)).catch(() => null))) p.thumb = '';
+  save(); applyTheme(); refresh();
+  const have = await idb.all().catch(() => ({}));
+  const missing = db.patterns.filter(p => p.fileId && !have[p.fileId]).length;
+  toast((mains.length ? '기록을 불러왔어요. ' : '') + (restoredFiles ? `도안 ${restoredFiles}개 복원. ` : '') + (missing ? `파일이 없는 도안 ${missing}개는 도안 백업 파일도 불러와 주세요.` : ''));
+});
+
+/* ============ 예시 데이터 ============ */
+function loadSample(){
+  const y1 = {id:uid(), brand:'샘플얀', name:'메리노 DK', colorName:'버건디', color:'#7a1f2b', weight:'3', fiber:'메리노 울 100%', grams:'50', meters:'120', skeins:'6', needleRec:'3.75~4', lot:'A12', location:'옷장 위 상자'};
+  const y2 = {id:uid(), brand:'샘플얀', name:'코튼 아란', colorName:'아이보리', color:'#efe6d2', weight:'4', fiber:'면 100%', grams:'100', meters:'170', skeins:'3', needleRec:'5', location:'바구니'};
+  const y3 = {id:uid(), brand:'', name:'모헤어 레이스', colorName:'안개 회색', color:'#a9a9b3', weight:'0', fiber:'키드모헤어 70% 실크 30%', grams:'25', meters:'210', skeins:'2'};
+  const n1 = {id:uid(), size:'4', type:'줄바늘', length:'80', material:'대나무', qty:'1'};
+  const n2 = {id:uid(), size:'3.5', type:'줄바늘', length:'40', material:'금속', qty:'1'};
+  const n3 = {id:uid(), size:'5', type:'막대바늘', length:'35', material:'나무', qty:'2'};
+  const g1 = {id:uid(), bSts:'23', bRows:'32', aSts:'22', aRows:'30', stitch:'메리야스', yarnId:y1.id, needleId:n1.id, date:today(), notes:'울이라 세탁 후 살짝 늘어남'};
+  const g2 = {id:uid(), bSts:'17', bRows:'23', aSts:'18', aRows:'25', stitch:'멍석뜨기', yarnId:y2.id, needleId:n3.id, date:today(), notes:'면사라 세로로 줄어듦'};
+  db.yarns.push(y1,y2,y3); db.needles.push(n1,n2,n3); db.gauges.push(g1,g2);
+  db.projects.push(
+    {id:uid(), name:'버건디 래글런 스웨터', status:'active', emoji:'🧥', pattern:'탑다운 래글런', size:'M', recipient:'나', start:today(), progress:35, gaugeId:g1.id, needleIds:[n1.id,n2.id], yarnUses:[{yarnId:y1.id, skeins:5}], notes:'코잡기 96코, 래글런 늘림 8코씩.\n몸판 분리 후 2cm마다 줄임 고려.', counters:[{id:uid(), name:'단', value:42, target:120, repeat:0},{id:uid(), name:'래글런 늘림', value:3, target:0, repeat:2}], created:Date.now(), updated:Date.now()},
+    {id:uid(), name:'여름 행주', status:'plan', emoji:'🧺', pattern:'멍석뜨기 행주', progress:0, gaugeId:g2.id, needleIds:[n3.id], yarnUses:[{yarnId:y2.id, skeins:1}], notes:'', counters:[{id:uid(), name:'단', value:0, target:50, repeat:0}], created:Date.now(), updated:Date.now()-1000},
+    {id:uid(), name:'친구 생일 목도리', status:'done', emoji:'🧣', pattern:'1×1 고무단 목도리', recipient:'친구', start:'2026-10-01', end:'2026-10-28', progress:100, needleIds:[], yarnUses:[], notes:'친구가 좋아했다!', counters:[{id:uid(), name:'단', value:310, target:0, repeat:0}], created:Date.now(), updated:Date.now()-5000}
+  );
+  save();
+}
+
+/* ============ 설치형 웹앱 (PWA) ============ */
+let deferredInstall = null, swReady = false;
+function isStandalone(){ return matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches || navigator.standalone === true; }
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; });
+window.addEventListener('appinstalled', () => { deferredInstall = null; toast('앱으로 설치했어요 🎉 홈 화면에서 열어 보세요'); });
+if('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    swReady = true;
+    /* 새 버전이 준비되면 알려 주기 */
+    reg.addEventListener('updatefound', () => {
+      const w = reg.installing;
+      w && w.addEventListener('statechange', () => {
+        if(w.state === 'installed' && navigator.serviceWorker.controller) toast('새 버전이 준비됐어요', '새로고침', () => location.reload());
+      });
+    });
+  }).catch(() => {});
+}
+if(navigator.storage && navigator.storage.persist && isStandalone()) navigator.storage.persist();
+
+route();
+migrateImages();
+</script>
+</body>
+</html>
