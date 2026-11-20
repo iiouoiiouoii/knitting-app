@@ -258,6 +258,38 @@ table.ref th{color:var(--muted);font-weight:500}
 .vmark-bar .mb.main{background:#e8a400;border-color:#e8a400;color:#fff}
 .vmark-bar .mb.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 @media (max-width:820px){ .vtitle{order:-1;flex-basis:calc(100% - 50px)} }
+/* 도안 뷰어 카운터 패널 */
+.vcounters{background:var(--surface);border-top:2px dashed var(--border);padding:8px 10px 6px}
+.vcounters:empty{display:none}
+.vc-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.vc-mini{border:1px dashed var(--border);background:none;border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer;margin-left:4px;color:var(--muted)}
+.vc-toggle{width:100%;border:0;background:none;padding:6px;font-weight:700;color:var(--muted);cursor:pointer}
+.vc-list{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
+.vc{flex:0 0 auto;min-width:190px;background:var(--surface-2);border-radius:12px;padding:8px 10px;outline:1.5px dashed var(--stitch);outline-offset:-5px}
+.vc-top{display:flex;justify-content:space-between;align-items:center}
+.vc-name{font-family:var(--hand);font-size:19px}
+.vc-gear{border:0;background:none;cursor:pointer;font-size:15px;color:var(--muted);padding:2px 4px}
+.vc-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0}
+.vc-row b{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.vc-row b small{font-size:13px;font-weight:700;color:var(--muted)}
+.vc-row button{width:46px;height:42px;border-radius:12px;border:1px solid var(--border);background:var(--surface);font-size:22px;font-weight:800;cursor:pointer}
+.vc-row button.plus{background:var(--accent);border-color:var(--accent);color:var(--accent-text)}
+.vc-sub{font-size:12px;color:var(--muted);min-height:16px}
+.rep-now{color:var(--accent)}
+/* 프로젝트: 지금 뜨는 부분 */
+.parts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.part{border:1.5px dashed var(--border);background:var(--surface);border-radius:999px;padding:7px 14px;cursor:pointer;font-size:14px;color:var(--text)}
+.part.done{color:var(--muted);text-decoration:line-through;background:var(--surface-2)}
+.part.done::before{content:"✓ ";color:var(--green);text-decoration:none;display:inline-block}
+.part.cur{border-style:solid;border-color:var(--accent);background:var(--accent-soft);font-weight:800}
+.part.cur::before{content:"🧶 "}
+.part-now{font-family:var(--hand);font-size:22px;color:var(--accent)}
+.part-badge{display:inline-block;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:1px 9px;font-size:12px;font-weight:700}
+/* 도안 필터 */
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.fsel{width:auto !important;padding:7px 10px !important;border-radius:999px !important;border-style:dashed !important;font-size:13px;color:var(--muted)}
+.fsel.on{border-style:solid !important;border-color:var(--accent) !important;color:var(--accent);background:var(--accent-soft) !important;font-weight:700}
+.tagchips .chip{font-size:12px;padding:4px 10px}
 /* toast */
 .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:11px 16px;border-radius:12px;display:flex;gap:14px;align-items:center;opacity:0;pointer-events:none;transition:.2s;z-index:100;font-size:14px;max-width:calc(100vw - 32px)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
@@ -436,6 +468,75 @@ dialog{border-radius:12px}
 .vbar{border-bottom:2px dashed var(--border)}
 .vmark-bar{border-top:2px dashed var(--border)}
 .vtitle{font-family:var(--hand);font-size:22px}
+
+/* =====================================================================
+   🎀 아기자기 꾸미기 + 양말이
+   ===================================================================== */
+.mascot{display:block;flex-shrink:0;overflow:visible}
+.brand .mascot{display:inline-block;margin:-6px 0 -8px -4px}
+/* 홈 인사 */
+.page-head.home{align-items:center}
+.hello{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;margin-left:auto}
+.hello .mascot{animation:bob 3.2s ease-in-out infinite;transform-origin:50% 90%}
+.hello.poke .mascot{animation:boing .5s ease}
+/* 말풍선: 부드러운 종이 메모 + 왼쪽 꼬리(양 쪽을 가리킴). .r 은 오른쪽 꼬리 */
+.bubble{position:relative;background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:10px 15px;font-size:14px;line-height:1.5;max-width:280px;color:var(--text);box-shadow:0 5px 12px -7px rgba(90,60,30,.35)}
+.bubble::before,.bubble::after{content:"";position:absolute;top:50%;width:0;height:0;border-style:solid}
+.bubble::before{left:-10px;margin-top:-8px;border-width:8px 10px 8px 0;border-color:transparent var(--border) transparent transparent}
+.bubble::after{left:-7.5px;margin-top:-6.5px;border-width:6.5px 8px 6.5px 0;border-color:transparent var(--surface) transparent transparent}
+.bubble.r::before{left:auto;right:-10px;border-width:8px 0 8px 10px;border-color:transparent transparent transparent var(--border)}
+.bubble.r::after{left:auto;right:-7.5px;border-width:6.5px 0 6.5px 8px;border-color:transparent transparent transparent var(--surface)}
+.hello{gap:12px}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-5px) rotate(2deg)}}
+@keyframes boing{0%{transform:scale(1)}30%{transform:scale(1.15,.85)}60%{transform:scale(.92,1.1)}100%{transform:scale(1)}}
+@media (max-width:820px){ .hello{margin:6px 0 0;width:100%;justify-content:flex-start} .hello .mascot{width:72px;height:72px} .hello .bubble{max-width:calc(100% - 90px)} }
+/* 축하 팝업 */
+.cheer{position:fixed;right:22px;bottom:96px;z-index:120;display:flex;align-items:flex-end;gap:4px;pointer-events:none;opacity:0;transform:translateY(40px) scale(.7);transition:.35s cubic-bezier(.3,1.6,.5,1)}
+.cheer.show{opacity:1;transform:none}
+.cheer.show .mascot{animation:boing .6s ease .2s}
+.cheer .bubble{margin-bottom:60px;font-weight:700}
+/* 사이드바 아래 양말이 */
+.side-pet{display:flex;align-items:flex-end;gap:2px;padding:0 6px 6px;color:var(--muted);font-size:12px}
+.side-pet .mascot{animation:bob 4s ease-in-out infinite}
+.side-pet span{font-family:var(--hand);font-size:17px;margin-bottom:46px}
+/* 빈 화면 양말이 */
+.empty .big{display:flex;justify-content:center;margin-bottom:4px}
+.empty .big .mascot{animation:bob 3.5s ease-in-out infinite}
+/* 도안 불러오는 중 */
+.vmsg .mascot{margin:0 auto 10px;animation:bob 1.4s ease-in-out infinite}
+
+/* 제목 옆 스티커 */
+main h1::after{content:"";display:inline-block;width:30px;height:30px;margin-left:8px;vertical-align:-4px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 34s-13-8-13-17a7 7 0 0 1 13-4 7 7 0 0 1 13 4c0 9-13 17-13 17z' fill='%23f8a5a5' stroke='%233d332b' stroke-width='2'/%3E%3Cpath d='M12 15a4 4 0 0 1 4-4' stroke='%23fff' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;transform:rotate(12deg)}
+/* 머리말 아래 바느질 물결선 */
+.page-head::after{content:"";flex-basis:100%;height:12px;margin-top:4px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='12'%3E%3Cpath d='M0 6 Q10 0 20 6 T40 6' fill='none' stroke='%23d4a088' stroke-width='2' stroke-dasharray='4 4' stroke-linecap='round'/%3E%3C/svg%3E") repeat-x left center;opacity:.8}
+/* 구역 제목 앞 꾸밈 (번갈아) */
+.section:nth-of-type(3n+1) .section-head h2::before{content:"✿ ";color:var(--accent)}
+.section:nth-of-type(3n+2) .section-head h2::before{content:"♡ ";color:#e8879a}
+.section:nth-of-type(3n) .section-head h2::before{content:"☆ ";color:var(--amber)}
+/* 포스트잇에 압정 */
+.stat::before{content:"";position:absolute;top:-7px;left:50%;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff 0 2px,var(--pin,#e8705a) 3px);box-shadow:0 2px 3px rgba(0,0,0,.25)}
+.stat:nth-child(2){--pin:#6ba4d9}.stat:nth-child(3){--pin:#f2b33d}.stat:nth-child(4){--pin:#7cbf86}
+/* 프로젝트 카드 = 폴라로이드 사진 */
+.grid > .pcard .pthumb{margin:12px 12px 0;border-radius:3px;background:var(--surface-2);box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}
+.grid > .pcard .pat-thumb{margin:12px 12px 0;border-radius:3px}
+.grid > .pcard:nth-child(odd){transform:rotate(-.6deg)}
+.grid > .pcard:nth-child(even){transform:rotate(.6deg)}
+.grid > .pcard:hover{transform:rotate(0) translateY(-3px)}
+/* 이어서 뜨기 카드 = 클립 */
+.resume::before{display:none}
+.resume::after{content:"";position:absolute;top:-16px;left:28px;width:26px;height:56px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 56'%3E%3Cpath d='M8 40V12a5 5 0 0 1 10 0v34a8 8 0 0 1-16 0V16' fill='none' stroke='%239aa3ad' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat;transform:rotate(-8deg);z-index:3}
+/* 백업 알림 = 접힌 메모지 */
+.notice{position:relative;transform:rotate(-.4deg)}
+.notice::after{content:"";position:absolute;right:0;bottom:0;border-width:0 0 18px 18px;border-style:solid;border-color:transparent transparent var(--bg) color-mix(in srgb,var(--note-1) 70%,#c9a64a)}
+/* 카운터 카드 귀퉁이에 하트 */
+.counter::after{content:"♥";position:absolute;right:14px;top:10px;color:var(--accent);opacity:.35;font-size:14px}
+/* 아래 탭바: 선택된 탭에 작은 하트 */
+@media (max-width:820px){ .bottom .nav-btn{position:relative} .bottom .nav-btn.active::after{content:"♥";position:absolute;top:0;right:22%;font-size:10px;color:var(--accent)} }
+/* 버튼 살짝 통통 */
+.btn:hover{transform:translateY(-1px)}
+.btn{transition:transform .12s,background .12s}
+/* 체크된 칩·탭에 반짝 */
+.seg button.active::before{content:"✦ ";color:var(--accent);font-size:11px}
 </style>
 </head>
 <body>
@@ -469,12 +570,12 @@ dialog{border-radius:12px}
       <button class="vbtn vinfo" data-action="vZoom" data-d="0" id="vZoom" title="화면 너비에 맞추기">100%</button>
       <button class="vbtn" data-action="vZoom" data-d="0.25" aria-label="확대">＋</button>
     </div>
-    <div class="vcounter" id="vCounter"></div>
     <button class="vbtn" data-action="vFull" title="전체 화면">⛶</button>
     <a class="vbtn" id="vOpen" target="_blank" rel="noopener" title="새 탭에서 열기 (인쇄·다운로드)">⤴</a>
   </div>
   <div class="vpages" id="vPages"></div>
   <span class="vedge-hint l" id="vEdgeL">‹</span><span class="vedge-hint r" id="vEdgeR">›</span>
+  <div class="vcounters" id="vCounters"></div>
   <div class="vmark-bar" id="vMarkBar"></div>
 </div>
 <div class="toast" id="toast"><span id="toastMsg"></span><button id="toastBtn"></button></div>
@@ -553,6 +654,80 @@ function yarnUsed(yarnId, exceptProjectId){
 }
 function needleInUse(nid){ return db.projects.filter(p => p.status === 'active' && (p.needleIds||[]).includes(nid)); }
 
+/* ============ 🐑 양말이 — 뜨개 노트 캐릭터 (목도리 두른 아기 양) ============
+   손으로 그린 낙서 느낌: 굵은 갈색 외곽선 + 단색 채우기, 일부러 살짝 삐뚤게. */
+function mascot(mood = 'happy', size = 80){
+  const L = '#4b3a30';                 /* 외곽선 */
+  const wool = [[34,60,15],[47,45,16],[66,42,17],[83,51,15],[89,69,14],[78,85,15],[58,90,16],[38,81,15],[60,64,26]];
+  const tuft = [[51,47,7.5],[60,43,8.5],[69,47.5,7]];
+  const circ = (arr, fill, stroke) => arr.map(([x,y,r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}"${stroke ? ` stroke="${L}" stroke-width="5.5"` : ''}/>`).join('');
+  const eyes = {
+    happy:  `<circle cx="52" cy="64" r="2.7" fill="${L}"/><circle cx="68.5" cy="63.5" r="2.7" fill="${L}"/>`,
+    cheer:  `<path d="M48.5 65 q3.5 -4.5 7 0 M65 64.5 q3.5 -4.5 7 0" fill="none" stroke="${L}" stroke-width="2.4" stroke-linecap="round"/>`,
+    sleepy: `<path d="M48.5 63.5 q3.5 3 7 0 M65 63 q3.5 3 7 0" fill="none" stroke="${L}" stroke-width="2.3" stroke-linecap="round"/>`,
+    wink:   `<circle cx="52" cy="64" r="2.7" fill="${L}"/><path d="M65 64.5 q3.5 -4 7 0" fill="none" stroke="${L}" stroke-width="2.4" stroke-linecap="round"/>`,
+    curious:`<circle cx="52" cy="64" r="2.9" fill="${L}"/><circle cx="68.5" cy="63.5" r="2.2" fill="${L}"/>`
+  }[mood] || '';
+  const mouth = {
+    cheer:  `<path d="M56.5 69.5 q4 6 8 0 z" fill="#c9605a" stroke="${L}" stroke-width="1.6" stroke-linejoin="round"/>`,
+    sleepy: `<path d="M58 71 q2.5 1.6 5 0" fill="none" stroke="${L}" stroke-width="1.8" stroke-linecap="round"/>`,
+    curious:`<circle cx="60.5" cy="71" r="1.9" fill="none" stroke="${L}" stroke-width="1.7"/>`
+  }[mood] || `<path d="M56.5 69.5 q2 2.4 4 0 q2 2.4 4 0" fill="none" stroke="${L}" stroke-width="1.8" stroke-linecap="round"/>`;
+  const extra = mood === 'sleepy' ? `<text x="86" y="34" font-size="13" font-family="sans-serif" font-weight="700" fill="${L}">z</text><text x="95" y="24" font-size="10" font-family="sans-serif" font-weight="700" fill="${L}">z</text>`
+    : mood === 'curious' ? `<path d="M90 26 q1 -7 7 -6 q5 1 3 6 q-2 3 -5 4 l0 3" fill="none" stroke="${L}" stroke-width="2.4" stroke-linecap="round"/><circle cx="95" cy="39" r="1.6" fill="${L}"/>`
+    : mood === 'cheer' ? `<path d="M18 30 l4 -2 M14 42 l5 0 M98 28 l-4 -2 M104 40 l-5 0" stroke="#e8a33d" stroke-width="2.6" stroke-linecap="round"/>` : '';
+  return `<svg class="mascot m-${mood}" viewBox="0 0 120 120" width="${size}" height="${size}" aria-hidden="true">
+    <path d="M45 92 l-0.6 13 M56 95 l0.4 11 M68 95 l-0.3 11 M78 91 l0.6 13" stroke="${L}" stroke-width="6" stroke-linecap="round"/>
+    ${circ(wool, '#fffaf0', true)}${circ(wool, '#fffaf0')}
+    <path d="M38 77 q4 4 9 3 M78 80 q5 -1 7 -6 M43 50 q4 -3 8 -2" fill="none" stroke="#e7dccb" stroke-width="2.2" stroke-linecap="round"/>
+    <ellipse cx="38.5" cy="60" rx="9.5" ry="5" transform="rotate(28 38.5 60)" fill="#efc3a6" stroke="${L}" stroke-width="2.6"/>
+    <ellipse cx="82" cy="59.5" rx="9.5" ry="5" transform="rotate(-24 82 59.5)" fill="#efc3a6" stroke="${L}" stroke-width="2.6"/>
+    <path d="M40.5 64 q-0.5 -16 19.5 -17.5 q20 -0.5 20.5 17 q0.5 14 -20 15.5 q-20 -0.5 -20 -15z" fill="#f6dcc6" stroke="${L}" stroke-width="2.8" stroke-linejoin="round"/>
+    ${circ(tuft, '#fffaf0', true)}${circ(tuft, '#fffaf0')}
+    <ellipse cx="46.5" cy="69.5" rx="3.8" ry="2.3" fill="#f3a29b"/><ellipse cx="74" cy="69" rx="3.8" ry="2.3" fill="#f3a29b"/>
+    ${eyes}${mouth}
+    <path d="M42 80 q18 9 37 -1 l1.5 7.5 q-19.5 10 -40 1 z" fill="#e5675a" stroke="${L}" stroke-width="2.6" stroke-linejoin="round"/>
+    <path d="M50 83.5 l-1 6 M58 85 l-0.5 6 M66 84.6 l0 6 M73 82.5 l0.5 5.5" stroke="#f6b3a6" stroke-width="2" stroke-linecap="round"/>
+    <path d="M67 86 l3.5 15 l8 -2.2 l-4.6 -14.5 z" fill="#e5675a" stroke="${L}" stroke-width="2.6" stroke-linejoin="round"/>
+    <path d="M71 101.2 l-0.6 4 M74.5 100.4 l0.2 4 M78 99.4 l1 3.8" stroke="${L}" stroke-width="2" stroke-linecap="round"/>
+    ${extra}
+  </svg>`;
+}
+/* 양말이 한마디 (시간·상황에 따라) */
+function mascotLines(){
+  const h = new Date().getHours(), p = resumeProject(), c = p && (p.counters||[])[0];
+  return [
+    h < 11 ? '좋은 아침! 오늘은 몇 단 떠 볼까?' : h < 18 ? '오늘도 한 코 한 코 차근차근~' : h < 22 ? '저녁 뜨개 시간~ 따뜻한 차 한 잔 어때?' : '밤뜨개는 눈 조심! 너무 늦게까지는 안 돼',
+    c ? `'${p.name}' ${c.value} ${c.name}까지 떴어! 이어서 가 볼까?` : '새 프로젝트를 시작해 볼까? 두근두근',
+    '틀려도 괜찮아, 풀면 되니까!',
+    '스와치는 귀찮아도 꼭 떠 보기~ 게이지가 중요해',
+    db.patterns.length ? `도안이 ${db.patterns.length}개나 모였어!` : 'PDF 도안을 보관함에 넣어 두면 바로 펼쳐 볼 수 있어',
+    '실이 엉키면 잠깐 쉬어 가자',
+    '메에~ 나도 목도리 하나 더 갖고 싶어'
+  ];
+}
+let mascotIdx = 0;
+function mascotHello(){
+  return `<div class="hello" data-action="poke" title="양말이를 눌러 보세요">
+    ${mascot(new Date().getHours() >= 22 ? 'sleepy' : 'happy', 92)}
+    <div class="bubble" id="helloMsg">${esc(mascotLines()[mascotIdx % mascotLines().length])}</div></div>`;
+}
+/* 축하할 때 양말이가 뿅! */
+function cheer(msg){
+  let el = $('#cheer');
+  if(!el){ el = document.createElement('div'); el.id = 'cheer'; el.className = 'cheer'; document.body.appendChild(el); }
+  el.innerHTML = `<div class="bubble r">${esc(msg)}</div>${mascot('cheer', 96)}`;
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2600);
+}
+/* 빈 화면에는 이모지 대신 양말이 */
+function decorateEmpty(root){
+  $$('.empty .big', root).forEach(el => {
+    const txt = el.parentElement.textContent;
+    el.innerHTML = mascot(/조건|검색/.test(txt) ? 'curious' : 'sleepy', 96);
+  });
+}
+
 /* ============ 테마 ============ */
 function applyTheme(){
   const t = db.settings.theme || 'auto';
@@ -568,9 +743,10 @@ const NAV = [
 NAV.splice(2, 0, ['patterns','📖','도안 보관함']);
 const NAV_SHORT = {home:'홈',projects:'프로젝트',patterns:'도안',calc:'계산기',gauges:'게이지',stash:'보관함'};
 function renderNav(cur){
-  $('#side').innerHTML = `<div class="brand">🧶 뜨개 노트</div>` +
+  $('#side').innerHTML = `<div class="brand">${mascot('happy', 40)} 뜨개 노트</div>` +
     NAV.map(([k,i,l]) => `<a class="nav-btn ${cur===k?'active':''}" href="#/${k}"><span class="ico">${i}</span>${l}</a>`).join('') +
     `<div class="spacer"></div>
+     <div class="side-pet">${mascot('wink', 64)}<span>화이팅!</span></div>
      <a class="nav-btn ${cur==='settings'?'active':''}" href="#/settings"><span class="ico">⚙️</span>설정·백업</a>
      <button class="nav-btn" data-action="toggleTheme"><span class="ico">🌓</span>테마: ${{auto:'자동',light:'밝게',dark:'어둡게'}[db.settings.theme||'auto']}</button>`;
   $('#bottom').innerHTML = NAV.map(([k,i]) => `<a class="nav-btn ${cur===k?'active':''}" href="#/${k}"><span class="ico">${i}</span>${NAV_SHORT[k]}</a>`).join('');
@@ -600,6 +776,7 @@ function route(){
     default: view.innerHTML = viewHome(); fab.onclick = () => editProject();
   }
   bindInputs();
+  decorateEmpty(view);
   hydrateImages(view);
   if(page === 'patterns') regenThumbs();
   /* 프로젝트 화면(카운터 누르며 뜨는 중)에서도 화면 켜 두기 */
@@ -623,6 +800,7 @@ function resumeCard(){
     <div style="min-width:0">
       <div class="lbl">🧶 이어서 뜨기</div>
       <div class="t">${esc(p.name)}</div>
+      ${p.curPart ? `<div style="margin:2px 0 4px"><span class="part-badge">🧶 지금 뜨는 곳: ${esc(p.curPart)}</span></div>` : ''}
       <div class="small muted">${pat ? '📖 ' + esc(pat.name) + (m ? ` · 📍 ${m.page}쪽에 표시해 둠` : '') : '도안 연결 안 됨'} · 진행률 ${num(p.progress)}%</div>
       <div class="acts">
         ${pat && pat.fileId ? `<button class="btn primary" data-action="openPattern" data-id="${pat.id}" data-pid="${p.id}">📖 도안 펼치고 이어 뜨기</button>` : ''}
@@ -654,8 +832,8 @@ function viewHome(){
   const isEmpty = !db.projects.length && !db.yarns.length && !db.needles.length && !db.gauges.length;
   const d = new Date();
   return `
-  <div class="page-head"><div><p class="diary-date">${d.getFullYear()}. ${d.getMonth()+1}. ${d.getDate()}. ${'일월화수목금토'[d.getDay()]}요일 ☀</p><h1>오늘의 뜨개 일기</h1><p class="sub">오늘은 어떤 걸 떠볼까요?</p></div>
-    <button class="btn primary hide-mobile" data-action="editProject">＋ 새 프로젝트</button></div>
+  <div class="page-head home"><div><h1>${d.getMonth()+1}월 ${d.getDate()}일 ${'일월화수목금토'[d.getDay()]}요일</h1><p class="sub">오늘은 어떤 걸 떠볼까요?</p></div>
+    ${mascotHello()}</div>
   ${backupNotice()}
   ${resumeCard()}
   ${isEmpty ? `<div class="card tape" style="margin-bottom:22px">
@@ -674,7 +852,7 @@ function viewHome(){
     <a class="stat" href="#/stash" data-action="stashTab" data-tab="needle"><div class="n">${db.needles.reduce((s,n)=>s+(num(n.qty)||1),0)}</div><div class="l">보유 바늘</div></a>
   </div>
   <div class="section">
-    <div class="section-head"><h2>진행 중인 프로젝트</h2><a class="small" href="#/projects">전체 보기 →</a></div>
+    <div class="section-head"><h2>진행 중인 프로젝트</h2><div class="row"><button class="btn sm primary hide-mobile" data-action="editProject">＋ 새 프로젝트</button><a class="small" href="#/projects">전체 보기 →</a></div></div>
     ${active.length ? `<div class="grid cols-2">${active.map(p => projectCard(p, true)).join('')}</div>`
       : `<div class="card empty"><div class="big">🪡</div><p>진행 중인 프로젝트가 없어요.</p><button class="btn primary" data-action="editProject">＋ 프로젝트 시작하기</button></div>`}
   </div>
@@ -691,7 +869,7 @@ function projectCard(p, withCounter){
     <div class="pbody">
       <div class="row between"><span class="t">${esc(p.name)}</span><span class="tag s-${p.status}">${STATUS[p.status]}</span></div>
       ${(() => { const n = (p.patternId && byId('patterns', p.patternId) || {}).name || p.pattern; return n ? `<div class="small muted">📖 ${esc(n)}</div>` : ''; })()}
-      <div class="row small muted" style="gap:10px"><span>진행률 ${num(p.progress)}%</span>${p.start ? `<span>시작 ${p.start}</span>` : ''}</div>
+      <div class="row small muted" style="gap:10px">${p.curPart && p.status !== 'done' ? `<span class="part-badge">🧶 ${esc(p.curPart)}</span>` : ''}<span>진행률 ${num(p.progress)}%</span>${p.start ? `<span>시작 ${p.start}</span>` : ''}</div>
       <div class="bar"><i style="width:${Math.min(100,num(p.progress))}%"></i></div>
       ${withCounter && c ? `<div class="mini-counter" data-stop>
           <span class="small muted">${esc(c.name)}</span>
@@ -758,6 +936,7 @@ function viewProject(id){
       </div>
     </div>
   </div>
+  ${partsSection(p, pat)}
   <div class="section">
     <div class="section-head"><h2>카운터</h2><button class="btn sm" data-action="addCounter" data-pid="${p.id}">＋ 카운터 추가</button></div>
     ${(p.counters||[]).length ? `<div class="counters">${p.counters.map(c => counterCard(p,c)).join('')}</div>
@@ -780,6 +959,44 @@ function yarnNeedText(p, have){
   const y = byId('yarns', linked[0].yarnId), per = num(y.meters);
   return `<span class="need-short">약 ${fmt(-diff,0)}m 부족해요${per ? ` (${esc(y.name || '같은 실')} ${Math.ceil(-diff / per)}볼 더)` : ''}</span>`;
 }
+/* ---------- 진행 상황: 지금 뜨는 부분 (소매·요크 등) ---------- */
+const PART_TEMPLATES = {
+  '스웨터 (탑다운)': ['목 고무단','요크','몸판','밑단','소매(왼)','소매(오)','마무리'],
+  '스웨터 (바텀업)': ['밑단','몸판','소매(왼)','소매(오)','요크','목 고무단','마무리'],
+  '카디건': ['목 고무단','요크','몸판','밑단','소매(왼)','소매(오)','앞섶 단','단추 달기'],
+  '조끼': ['밑단','몸판','진동 고무단','목 고무단','마무리'],
+  '모자': ['고무단','몸통','정수리 줄임','방울 달기'],
+  '양말': ['커프','다리','뒤꿈치','발등','발끝','반대쪽 한 짝'],
+  '목도리·숄': ['코잡기','본판','마무리·블로킹'],
+  '장갑': ['커프','손바닥','엄지','손가락','반대쪽 한 짝']
+};
+/* 도안 종류에 맞는 틀을 먼저 추천 */
+const CAT_TO_TPL = {'스웨터·풀오버':'스웨터 (탑다운)','카디건':'카디건','조끼':'조끼','모자':'모자','양말':'양말','목도리·숄':'목도리·숄','장갑':'장갑'};
+function partsSection(p, pat){
+  const parts = p.parts || [];
+  if(!parts.length){
+    const rec = pat && CAT_TO_TPL[pat.category];
+    const names = Object.keys(PART_TEMPLATES).sort((a,b) => (b === rec) - (a === rec));
+    return `<div class="section"><div class="section-head"><h2>진행 상황</h2></div>
+      <div class="card"><p class="small muted" style="margin-top:0">소매·요크처럼 <b>어느 부분을 뜨고 있는지</b> 표시해 두면 다음에 바로 이어 뜰 수 있어요. 틀을 고르거나 직접 적어 보세요.</p>
+      <div class="parts">${names.map(n => `<button class="part ${n === rec ? 'cur' : ''}" data-action="partTpl" data-pid="${p.id}" data-tpl="${esc(n)}">${esc(n)}${n === rec ? ' (추천)' : ''}</button>`).join('')}
+      <button class="part" data-action="editParts" data-pid="${p.id}">✏️ 직접 입력</button></div></div></div>`;
+  }
+  const done = parts.filter(x => x.done).length;
+  return `<div class="section"><div class="section-head"><h2>진행 상황</h2><button class="btn sm" data-action="editParts" data-pid="${p.id}">부분 편집</button></div>
+    <div class="card">
+      <div class="row between" style="margin-bottom:10px"><span class="part-now">${p.curPart ? `지금 뜨는 곳: ${esc(p.curPart)}` : '뜨는 부분을 눌러 골라 주세요'}</span><span class="small muted">${done}/${parts.length} 부분 완성</span></div>
+      <div class="parts">${parts.map((x, i) => `<button class="part ${x.done ? 'done' : ''} ${p.curPart === x.name ? 'cur' : ''}" data-action="partSet" data-pid="${p.id}" data-i="${i}">${esc(x.name)}</button>`).join('')}</div>
+      ${p.curPart && !(parts.find(x => x.name === p.curPart) || {}).done ? `<div class="row" style="margin-top:12px"><button class="btn primary" data-action="partDone" data-pid="${p.id}">✓ '${esc(p.curPart)}' 다 떴어요 → 다음 부분</button></div>` : ''}
+      <p class="small muted" style="margin-bottom:0">부분을 누르면 '지금 뜨는 곳'으로 바뀌어요. 다 뜬 부분을 다시 누르면 완성 표시가 풀려요.</p>
+    </div></div>`;
+}
+function setParts(p, names){
+  const old = new Map((p.parts || []).map(x => [x.name, x.done]));
+  p.parts = names.map(n => ({name: n, done: !!old.get(n)}));
+  if(!p.parts.some(x => x.name === p.curPart)) p.curPart = (p.parts.find(x => !x.done) || {}).name || '';
+  p.updated = Date.now(); save(); refresh();
+}
 function counterCard(p, c){
   const rep = num(c.repeat);
   const pct = c.target ? Math.min(100, c.value / c.target * 100) : 0;
@@ -788,7 +1005,7 @@ function counterCard(p, c){
       <span><button class="btn sm ghost" data-action="editCounter" data-pid="${p.id}" data-cid="${c.id}" title="설정">⚙️</button></span></div>
     <div class="val">${c.value}</div>
     ${c.target ? `<div class="rep">목표 ${c.target} · ${Math.max(0, c.target - c.value)} 남음</div><div class="bar" style="margin:6px 0"><i style="width:${pct}%"></i></div>` : ''}
-    ${rep ? `<div class="rep">🔁 ${rep}단 반복: <b>${Math.floor(c.value / rep) + 1}</b>번째 반복의 <b>${(c.value % rep) + 1}</b>단째</div>` : ''}
+    ${rep ? `<div class="rep">${repeatInfo(c)}</div>` : ''}
     <div class="ctrl">
       <button data-action="count" data-pid="${p.id}" data-cid="${c.id}" data-d="-1" aria-label="빼기">−</button>
       <button class="plus" data-action="count" data-pid="${p.id}" data-cid="${c.id}" data-d="1" aria-label="더하기">＋</button>
@@ -823,7 +1040,7 @@ function editProject(id, preset){
     if(oldPhoto && oldPhoto !== vals.photo) deleteImage(oldPhoto);
     if(p){ Object.assign(p, vals, {updated: Date.now()}); }
     else {
-      db.projects.push(Object.assign({id: uid(), progress:0, notes:'', counters:[{id: uid(), name:'단', value:0, target:0, repeat:0}], created: Date.now(), updated: Date.now()}, vals));
+      db.projects.push(Object.assign({id: uid(), progress:0, notes:'', counters:[{id: uid(), name:'단', value:0, target:0, repeat:0}, {id: uid(), name:'늘림', value:0, target:0, repeat:0}], created: Date.now(), updated: Date.now()}, vals));
     }
     save();
     toast(p ? '수정했어요' : '프로젝트를 만들었어요 🎉');
@@ -1341,20 +1558,44 @@ async function pdfInfo(blob){
 
 /* ============ 도안 보관함 ============ */
 const PATTERN_CATS = ['스웨터·풀오버','카디건','조끼','모자','목도리·숄','양말','장갑','가방','인형·소품','담요','기타'];
+const PATTERN_LEVELS = [['1','쉬움'],['2','보통'],['3','어려움']];
+const PATTERN_METHODS = ['탑다운','바텀업','조각 떠서 잇기','원통 뜨기','평면 뜨기'];
+const patTags = p => String(p.tags || '').split(/[,#\s]+/).map(t => t.trim()).filter(Boolean);
 function viewPatterns(){
+  const f = ui.patF || (ui.patF = {});
   const q = ui.patSearch.trim().toLowerCase();
-  const cats = [...new Set(db.patterns.map(p => p.category).filter(Boolean))];
+  const count = (key, val) => db.patterns.filter(p => key === 'tag' ? patTags(p).includes(val) : p[key] === val).length;
+  const linked = p => db.projects.some(x => x.patternId === p.id);
   const list = db.patterns
     .filter(p => !ui.patCat || p.category === ui.patCat)
-    .filter(p => !q || [p.name, p.designer, p.category, p.notes, p.fileName].join(' ').toLowerCase().includes(q))
-    .slice().sort((a,b) => (b.lastOpened||b.created||0) - (a.lastOpened||a.created||0));
+    .filter(p => !f.weight || p.weight === f.weight)
+    .filter(p => !f.level || p.level === f.level)
+    .filter(p => !f.method || p.method === f.method)
+    .filter(p => !f.tag || patTags(p).includes(f.tag))
+    .filter(p => !f.has || (f.has === 'file' ? p.fileId : f.has === 'proj' ? linked(p) : !linked(p)))
+    .filter(p => !q || [p.name, p.designer, p.category, p.notes, p.fileName, p.tags, p.method].join(' ').toLowerCase().includes(q))
+    .slice().sort((a,b) => f.sort === 'name' ? a.name.localeCompare(b.name, 'ko') : (b.lastOpened||b.created||0) - (a.lastOpened||a.created||0));
+  const cats = PATTERN_CATS.filter(c => count('category', c));
+  const tags = [...new Set(db.patterns.flatMap(patTags))].sort((a,b) => count('tag',b) - count('tag',a)).slice(0, 14);
+  const active = !!(ui.patCat || f.weight || f.level || f.method || f.tag || f.has || q);
+  const sel = (key, label, opts) => `<select data-patf="${key}" class="fsel ${f[key] ? 'on' : ''}"><option value="">${label}</option>${opts.map(([v,l]) => `<option value="${esc(v)}" ${f[key]===v?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
   return `
   <div class="page-head"><div><h1>도안 보관함</h1><p class="sub">PDF·사진 도안을 이 기기에 보관하고 바로 펼쳐 볼 수 있어요. 마지막으로 본 쪽도 기억해요.</p></div>
     <button class="btn primary hide-mobile" data-action="editPattern">＋ 도안 추가</button></div>
-  ${db.patterns.length ? `<div class="toolbar"><input class="search" type="search" placeholder="도안 이름·디자이너·메모 검색" value="${esc(ui.patSearch)}" data-bind="patSearch"></div>
-    ${cats.length > 1 ? `<div class="chips" style="margin-bottom:16px"><button class="chip ${!ui.patCat?'active':''}" data-action="patCat" data-v="">전체</button>${cats.map(c => `<button class="chip ${ui.patCat===c?'active':''}" data-action="patCat" data-v="${esc(c)}">${esc(c)}</button>`).join('')}</div>` : ''}` : ''}
+  ${db.patterns.length ? `<div class="toolbar"><input class="search" type="search" placeholder="도안 이름·디자이너·태그·메모 검색" value="${esc(ui.patSearch)}" data-bind="patSearch"></div>
+    <div class="chips" style="margin-bottom:10px"><button class="chip ${!ui.patCat?'active':''}" data-action="patCat" data-v="">전체 ${db.patterns.length}</button>${cats.map(c => `<button class="chip ${ui.patCat===c?'active':''}" data-action="patCat" data-v="${esc(c)}">${esc(c)} ${count('category',c)}</button>`).join('')}</div>
+    <div class="filters">
+      ${sel('weight', '실 굵기 전체', WEIGHTS.filter(([k]) => count('weight',k)).map(([k]) => [k, WEIGHT_SHORT[k]]))}
+      ${sel('level', '난이도 전체', PATTERN_LEVELS.filter(([k]) => count('level',k)))}
+      ${sel('method', '뜨는 방식 전체', PATTERN_METHODS.filter(m => count('method',m)).map(m => [m,m]))}
+      ${sel('has', '모든 도안', [['file','파일 있는 도안'],['proj','떠 본(연결된) 도안'],['none','아직 안 뜬 도안']])}
+      ${sel('sort', '최근 연 순', [['name','이름 순']])}
+      ${active ? `<button class="btn sm ghost" data-action="patReset">필터 초기화</button>` : ''}
+    </div>
+    ${tags.length ? `<div class="chips tagchips" style="margin-bottom:16px">${tags.map(t => `<button class="chip ${f.tag===t?'active':''}" data-action="patTag" data-v="${esc(t)}">#${esc(t)}</button>`).join('')}</div>` : '<div style="height:6px"></div>'}
+    <p class="small muted" style="margin:-4px 0 12px">${list.length}개 도안</p>` : ''}
   ${list.length ? `<div class="grid cols-3">${list.map(patternCard).join('')}</div>`
-    : `<div class="card empty"><div class="big">📖</div><p>${db.patterns.length ? '조건에 맞는 도안이 없어요.' : '갖고 있는 PDF 도안을 올려 두면 프로젝트를 뜨면서 바로 볼 수 있어요.'}</p><button class="btn primary" data-action="editPattern">＋ 도안 추가</button></div>`}`;
+    : `<div class="card empty"><div class="big">📖</div><p>${db.patterns.length ? '조건에 맞는 도안이 없어요.' : '갖고 있는 PDF 도안을 올려 두면 프로젝트를 뜨면서 바로 볼 수 있어요.'}</p>${active ? '<button class="btn" data-action="patReset">필터 초기화</button> ' : ''}<button class="btn primary" data-action="editPattern">＋ 도안 추가</button></div>`}`;
 }
 function patternCard(p){
   const projects = db.projects.filter(x => x.patternId === p.id);
@@ -1363,7 +1604,9 @@ function patternCard(p){
       ${p.fileId ? `<span class="pat-badge">${p.fileType === 'pdf' ? 'PDF' : '사진'}${p.pages ? ' · ' + p.pages + '쪽' : ''}</span>` : ''}</div>
     <div class="pbody">
       <div class="t">${esc(p.name)}</div>
-      <div class="small muted">${[p.designer, p.category].filter(Boolean).map(esc).join(' · ') || '&nbsp;'}</div>
+      <div class="small muted">${esc(p.designer || '') || '&nbsp;'}</div>
+      <div class="row" style="gap:4px">${[p.category, p.weight && WEIGHT_SHORT[p.weight], p.level && (PATTERN_LEVELS.find(l => l[0] === p.level) || [])[1], p.method].filter(Boolean).map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
+      ${patTags(p).length ? `<div class="small" style="color:var(--accent)">${patTags(p).map(t => '#' + esc(t)).join(' ')}</div>` : ''}
       ${projects.length ? `<div class="small muted">📌 ${projects.map(x => esc(x.name)).join(', ')}</div>` : ''}
       <div class="row" style="margin-top:6px" data-stop>
         ${p.fileId ? `<button class="btn sm primary" data-action="openPattern" data-id="${p.id}">📖 열기${p.marker && p.marker.on ? ` (📍${p.marker.page}쪽)` : p.lastPage > 1 ? ` (${p.lastPage}쪽부터)` : ''}</button>` : `<span class="small muted">파일 없음</span>`}
@@ -1385,6 +1628,10 @@ function editPattern(id){
     {key:'name', label:'도안 이름', required:true, full:true, placeholder:'파일을 고르면 자동으로 채워져요'},
     {key:'designer', label:'디자이너·출처', placeholder:'예: ○○ 니트 공방'},
     {key:'category', label:'종류', type:'select', options:[['','— 선택 —'], ...PATTERN_CATS.map(c => [c,c])]},
+    {key:'weight', label:'실 굵기', type:'select', options:[['','— 선택 —'], ...WEIGHTS]},
+    {key:'level', label:'난이도', type:'select', options:[['','— 선택 —'], ...PATTERN_LEVELS]},
+    {key:'method', label:'뜨는 방식', type:'select', options:[['','— 선택 —'], ...PATTERN_METHODS.map(m => [m,m])]},
+    {key:'tags', label:'태그 (쉼표로 구분)', full:true, placeholder:'예: 꽈배기, 래글런, 아이용, 선물'},
     {key:'url', label:'구매·판매 페이지 링크', full:true, placeholder:'https://'},
     {key:'notes', label:'메모', type:'textarea', full:true, placeholder:'필요한 실·바늘, 사이즈 정보, 수정할 점 등'},
   ], p || {}, async vals => {
@@ -1441,7 +1688,7 @@ async function openViewer(patternId, projectId){
   renderViewerCounter();
   renderMarkBar();
   const pages = $('#vPages');
-  pages.innerHTML = `<div class="vmsg">도안을 펼치는 중… 📖</div>`;
+  pages.innerHTML = `<div class="vmsg">${mascot('happy', 90)}도안을 펼치는 중…</div>`;
   if(vw.pdf){ vw.pdf.destroy(); vw.pdf = null; }
   if(p.fileType !== 'pdf'){
     $('#vPageInfo').textContent = '';
@@ -1574,7 +1821,7 @@ function scrollToMarker(instant, onlyIfHidden){
   box.scrollTo({top: top - box.clientHeight * 0.35, behavior: instant ? 'auto' : 'smooth'});
 }
 function renderMarkBar(){
-  const m = mk(), on = m && m.on, hasProj = !!(vw.projectId && byId('projects', vw.projectId));
+  const m = mk(), on = m && m.on, hasProj = !!getOwner(viewerOwnerKey());
   $('#vMarkBar').innerHTML = on ? `
     <button class="mb" data-action="mMove" data-d="-1" aria-label="한 칸 위로">▲</button>
     <button class="mb main" data-action="mMove" data-d="1" aria-label="한 칸 아래로">▼ 다음 줄</button>
@@ -1657,13 +1904,41 @@ function toggleFullscreen(){
   if(document.fullscreenElement) document.exitFullscreen();
   else (document.documentElement.requestFullscreen || function(){ toast('이 브라우저는 전체 화면을 지원하지 않아요'); }).call(document.documentElement).catch?.(() => {});
 }
+/* 카운터 주인: 프로젝트 id 또는 'pat:<도안id>' (프로젝트 없이 도안만 열었을 때) */
+function getOwner(key){
+  if(!key) return null;
+  if(String(key).startsWith('pat:')){
+    const pt = byId('patterns', key.slice(4)); if(!pt) return null;
+    if(!pt.counters) pt.counters = [{id: uid(), name:'단', value:0, target:0, repeat:0}, {id: uid(), name:'늘림', value:0, target:0, repeat:0}];
+    return pt;
+  }
+  return byId('projects', key);
+}
+function viewerOwnerKey(){ return vw.projectId || (vw.pattern && 'pat:' + vw.pattern.id); }
+/* 반복(늘림·줄임·무늬) 안내: n단마다 → 다음이 몇 단 뒤인지 */
+function repeatInfo(c){
+  const rep = num(c.repeat); if(!rep) return '';
+  const k = rep - (c.value % rep);
+  return `🔁 ${rep}단마다 · ${k === 1 ? '<b class="rep-now">다음 단이에요 ✨</b>' : `${k}단 뒤`}`;
+}
+/* 도안 뷰어 아래 카운터 패널 (단·늘림 등 전부) */
 function renderViewerCounter(){
-  const box = $('#vCounter');
-  const p = vw.projectId && byId('projects', vw.projectId), c = p && p.counters && p.counters[0];
-  if(!c){ box.innerHTML = ''; return; }
-  box.innerHTML = `<span class="small" title="${esc(p.name)}">${esc(c.name)}</span>
-    <button data-action="vCount" data-d="-1" aria-label="빼기">−</button><b>${c.value}${c.target ? `<small>/${c.target}</small>` : ''}</b>
-    <button class="plus" data-action="vCount" data-d="1" aria-label="더하기">＋</button>`;
+  const box = $('#vCounters'); if(!box) return;
+  const key = viewerOwnerKey(), o = getOwner(key);
+  if(!o){ box.innerHTML = ''; return; }
+  if(db.settings.vcHide){ box.innerHTML = `<button class="vc-toggle" data-action="vcToggle">🧮 카운터 펼치기</button>`; return; }
+  const proj = vw.projectId && byId('projects', vw.projectId);
+  box.innerHTML = `<div class="vc-head"><span class="small muted">${proj ? `🧶 ${esc(proj.name)}${proj.curPart ? ` · <b>${esc(proj.curPart)}</b> 뜨는 중` : ''}` : '📖 이 도안 카운터'}</span>
+      <span><button class="vc-mini" data-action="vcAdd">＋ 카운터</button><button class="vc-mini" data-action="vcToggle">접기</button></span></div>
+    <div class="vc-list">${o.counters.map(c => `<div class="vc">
+      <div class="vc-top"><span class="vc-name">${esc(c.name)}</span><button class="vc-gear" data-action="vcEdit" data-cid="${c.id}" aria-label="설정">⚙</button></div>
+      <div class="vc-row">
+        <button data-action="vCount" data-cid="${c.id}" data-d="-1" aria-label="빼기">−</button>
+        <b>${c.value}${c.target ? `<small>/${c.target}</small>` : ''}</b>
+        <button class="plus" data-action="vCount" data-cid="${c.id}" data-d="1" aria-label="더하기">＋</button>
+      </div>
+      <div class="vc-sub">${c.target ? `${c.value >= c.target ? '🎯 목표 달성!' : `목표까지 ${c.target - c.value}`}` : ''}${c.target && c.repeat ? ' · ' : ''}${repeatInfo(c)}</div>
+    </div>`).join('')}</div>`;
 }
 function closeViewer(){
   $('#viewer').hidden = true; document.body.style.overflow = '';
@@ -1852,15 +2127,16 @@ const actions = {
     if(d.coll === 'projects' && location.hash.startsWith('#/project/')) location.hash = '#/projects'; else refresh();
   },
   count: d => {
-    const p = byId('projects', d.pid), c = p && (p.counters||[]).find(x => x.id === d.cid); if(!c) return;
+    const p = getOwner(d.pid), c = p && (p.counters||[]).find(x => x.id === d.cid); if(!c) return;
     c.value = Math.max(0, c.value + num(d.d)); p.updated = Date.now(); save();
     if(navigator.vibrate) navigator.vibrate(8);
-    if(c.target && c.value === c.target && num(d.d) > 0) toast(`🎯 '${c.name}' 목표 ${c.target}에 도달했어요!`);
-    else if(num(c.repeat) && c.value % num(c.repeat) === 0 && num(d.d) > 0) toast(`🔁 무늬 반복 한 번 완료!`);
+    const rep = num(c.repeat);
+    if(c.target && c.value === c.target && num(d.d) > 0) cheer(`🎯 ${c.name} ${c.target} 달성! 대단해!`);
+    else if(rep && num(d.d) > 0 && (c.value + 1) % rep === 0) toast(`✨ 다음 단이 ${rep}단마다 하는 단이에요 (늘림·줄임·무늬)`);
     refresh();
   },
   addCounter: d => counterForm(d.pid), editCounter: d => counterForm(d.pid, d.cid),
-  finishProject: d => { const p = byId('projects', d.id); p.status = 'done'; p.progress = 100; p.end = p.end || today(); p.updated = Date.now(); save(); toast('🎉 완성을 축하해요!'); refresh(); },
+  finishProject: d => { const p = byId('projects', d.id); p.status = 'done'; p.progress = 100; p.end = p.end || today(); p.updated = Date.now(); save(); cheer('🎉 완성 축하해! 정말 멋지다!'); refresh(); },
   setUnit: d => setUnit(d.v),
   useGauge: d => { const v = gaugeVals(byId("gauges", d.id)), f = isIn() ? 10.16 / 10 : 1, r1 = x => x ? String(Math.round(x * f * 10) / 10) : ""; ui.calc.g_s = ui.calc.cv_ms = ui.calc.m_gs = r1(v.sts); ui.calc.g_r = ui.calc.cv_mr = ui.calc.m_gr = r1(v.rows); ui.calcTab = "size"; location.hash = "#/calc"; toast(`${v.after ? "블로킹 후" : "블로킹 전"} 게이지를 불러왔어요`); },
   addYuse: d => { $('#yuseList').insertAdjacentHTML('beforeend', yuseRow({yarnId: db.yarns[0].id, skeins:1}, d.pid)); },
@@ -1911,15 +2187,46 @@ const actions = {
   projectFromPattern: d => { const pt = byId('patterns', d.id); editProject(null, {patternId: pt.id, name: pt.name}); },
   openPattern: d => openViewer(d.id, d.pid),
   patCat: d => { ui.patCat = d.v; refresh(); },
+  partTpl: d => { const p = byId('projects', d.pid); setParts(p, PART_TEMPLATES[d.tpl]); toast('부분을 나눴어요. 지금 뜨는 부분을 눌러 골라 주세요'); },
+  editParts: d => {
+    const p = byId('projects', d.pid);
+    openForm('부분 편집', [
+      {key:'list', label:'한 줄에 하나씩 적어 주세요 (뜨는 순서대로)', type:'textarea', full:true, placeholder:'목 고무단\n요크\n몸판\n소매(왼)\n소매(오)'},
+    ], {list: (p.parts || []).map(x => x.name).join('\n')}, vals => {
+      setParts(p, [...new Set(vals.list.split('\n').map(s => s.trim()).filter(Boolean))]);
+    });
+  },
+  partSet: d => {
+    const p = byId('projects', d.pid), x = p.parts[+d.i];
+    if(x.done){ x.done = false; toast(`'${x.name}' 완성 표시를 풀었어요`); }
+    p.curPart = x.name; p.updated = Date.now(); save(); refresh();
+  },
+  partDone: d => {
+    const p = byId('projects', d.pid), x = p.parts.find(y => y.name === p.curPart); if(!x) return;
+    x.done = true;
+    const i = p.parts.indexOf(x), next = p.parts.slice(i + 1).find(y => !y.done) || p.parts.find(y => !y.done);
+    p.curPart = next ? next.name : '';
+    const pct = Math.round(p.parts.filter(y => y.done).length / p.parts.length * 100);
+    if(pct > num(p.progress)) p.progress = pct;
+    p.updated = Date.now(); save(); refresh();
+    if(next) cheer(`'${x.name}' 완성! 이제 '${next.name}' 차례야`); else cheer('모든 부분 완성! 마무리만 남았어 🎉');
+  },
+  patTag: d => { ui.patF = ui.patF || {}; ui.patF.tag = ui.patF.tag === d.v ? '' : d.v; refresh(); },
+  patReset: () => { ui.patF = {}; ui.patCat = ''; ui.patSearch = ''; refresh(); },
   closeViewer: () => closeViewer(),
   vPage: d => { if(vw.pdf) goPage(vw.cur + num(d.d)); },
   vZoom: d => setZoom(num(d.d) ? vw.zoom + num(d.d) : 1),
   vCount: d => {
-    const p = byId('projects', vw.projectId), c = p && p.counters[0]; if(!c) return;
-    actions.count({pid: p.id, cid: c.id, d: d.d});
+    const key = viewerOwnerKey(), o = getOwner(key); if(!o || !o.counters.length) return;
+    const c = d.cid ? o.counters.find(x => x.id === d.cid) : o.counters[0]; if(!c) return;
+    actions.count({pid: key, cid: c.id, d: d.d});
     renderViewerCounter();
-    const m = mk(); if(m && m.on && m.follow) moveMarker(num(d.d) > 0 ? 1 : -1);
+    /* 표시 띠 연동은 첫 번째(단) 카운터만 */
+    const m = mk(); if(c === o.counters[0] && m && m.on && m.follow) moveMarker(num(d.d) > 0 ? 1 : -1);
   },
+  vcToggle: () => { db.settings.vcHide = !db.settings.vcHide; save(); renderViewerCounter(); },
+  vcAdd: () => counterForm(viewerOwnerKey(), null, {name: getOwner(viewerOwnerKey()).counters.some(c => /늘림/.test(c.name)) ? '줄임' : '늘림'}),
+  vcEdit: d => counterForm(viewerOwnerKey(), d.cid),
   mToggle: () => {
     const m = mk();
     if(m && m.on){ m.on = false; renderMarker(); saveMarker(); return; }
@@ -1928,6 +2235,7 @@ const actions = {
     toast('띠를 끌어 옮기고, 아래 손잡이로 높이를 맞추세요. 「📍 여기로」는 화면 가운데로 옮겨요.');
   },
   mHere: () => { placeMarkerAtView(); toast('지금 화면 가운데로 표시를 옮겼어요'); },
+  poke: (d, el) => { mascotIdx++; const m = $('#helloMsg'); if(m) m.textContent = mascotLines()[mascotIdx % mascotLines().length]; el.classList.remove('poke'); void el.offsetWidth; el.classList.add('poke'); },
   snoozeBackup: () => { db.settings.backupSnooze = Date.now() + 3 * 864e5; save(); refresh(); },
   mMove: d => moveMarker(num(d.d)),
   mGo: () => scrollToMarker(false),
@@ -1940,21 +2248,24 @@ const actions = {
   mFollow: () => { const m = mk(); m.follow = !m.follow; saveMarker(); renderMarkBar(); toast(m.follow ? '카운터를 ＋하면 표시도 한 줄 내려가요' : '카운터 연동을 껐어요'); },
   loadSample: () => { loadSample(); toast('예시 데이터를 추가했어요 ✨'); refresh(); },
 };
-function counterForm(pid, cid){
-  const p = byId('projects', pid); const c = cid && p.counters.find(x => x.id === cid);
+/* key: 프로젝트 id 또는 'pat:<도안id>' */
+function counterForm(key, cid, preset){
+  const p = getOwner(key); if(!p) return; p.counters = p.counters || [];
+  const c = cid && p.counters.find(x => x.id === cid);
+  const after = () => { save(); refresh(); renderViewerCounter(); };
   openForm(c ? '카운터 설정' : '카운터 추가', [
-    {key:'name', label:'이름', required:true, placeholder:'예: 단, 코, 무늬 반복, 소매'},
+    {key:'name', label:'이름', required:true, placeholder:'예: 단, 늘림, 줄임, 무늬 반복'},
     {key:'value', label:'현재 값', type:'number', step:'1'},
-    {key:'target', label:'목표 값 (선택)', type:'number', step:'1', hint:'도달하면 알려 드려요'},
-    {key:'repeat', label:'무늬 반복 단 수 (선택)', type:'number', step:'1', hint:'예: 8단마다 꽈배기 → 8'},
-  ], c || {name: p.counters && p.counters.length ? '무늬 반복' : '단', value:0}, vals => {
+    {key:'target', label:'목표 값 (선택)', type:'number', step:'1', hint:'예: 목표 120단, 늘림 총 8번 → 도달하면 알려 드려요'},
+    {key:'repeat', label:'몇 단마다? (선택)', type:'number', step:'1', hint:'예: 6단마다 늘림 → 6. 다음 늘림까지 몇 단 남았는지 보여 드려요'},
+  ], c || Object.assign({name: p.counters.length ? '늘림' : '단', value:0}, preset), vals => {
     const v = {name: vals.name, value: Math.max(0, Math.round(num(vals.value))), target: Math.round(num(vals.target)), repeat: Math.round(num(vals.repeat))};
-    if(c) Object.assign(c, v); else (p.counters = p.counters || []).push(Object.assign({id: uid()}, v));
-    save(); refresh();
+    if(c) Object.assign(c, v); else p.counters.push(Object.assign({id: uid()}, v));
+    after();
   });
   if(c){ $('.dlg-foot').insertAdjacentHTML('afterbegin', `<button type="button" class="btn ghost danger" style="margin-right:auto" id="delCounter">카운터 삭제</button>`);
-    $('#delCounter').onclick = () => { const i = p.counters.indexOf(c); p.counters.splice(i,1); save(); $('#dlg').close(); refresh();
-      toast('카운터를 삭제했어요', '되돌리기', () => { p.counters.splice(i,0,c); save(); refresh(); }); }; }
+    $('#delCounter').onclick = () => { const i = p.counters.indexOf(c); p.counters.splice(i,1); $('#dlg').close(); after();
+      toast('카운터를 삭제했어요', '되돌리기', () => { p.counters.splice(i,0,c); after(); }); }; }
 }
 document.addEventListener('click', e => {
   if(e.target.closest('a[target="_blank"]')) return; /* 외부 링크·새 탭 열기는 그대로 */
@@ -1965,6 +2276,7 @@ document.addEventListener('click', e => {
 });
 $('#dlg').addEventListener('click', e => { if(e.target === $('#dlg')) $('#dlg').close(); });
 function bindInputs(){
+  $$('[data-patf]').forEach(el => el.addEventListener('change', () => { (ui.patF = ui.patF || {})[el.dataset.patf] = el.value; refresh(); }));
   $$('[data-bind]').forEach(el => el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
     ui[el.dataset.bind] = el.value;
     const pos = el.selectionStart; refresh();
@@ -1985,8 +2297,8 @@ document.addEventListener('keydown', e => {
     if(e.key === 'Escape'){ e.preventDefault(); closeViewer(); }
     else if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); actions.vPage({d: 1}); }
     else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); actions.vPage({d: -1}); }
-    else if(vw.projectId && (e.key === ' ' || e.key === '+' || e.key === '=')){ e.preventDefault(); actions.vCount({d: 1}); }
-    else if(vw.projectId && e.key === '-'){ e.preventDefault(); actions.vCount({d: -1}); }
+    else if(e.key === ' ' || e.key === '+' || e.key === '='){ e.preventDefault(); actions.vCount({d: 1}); }
+    else if(e.key === '-'){ e.preventDefault(); actions.vCount({d: -1}); }
     return;
   }
   if(!location.hash.startsWith('#/project/') || $('#dlg').open) return;
@@ -2086,6 +2398,7 @@ if('serviceWorker' in navigator && (location.protocol === 'https:' || location.h
 }
 if(navigator.storage && navigator.storage.persist && isStandalone()) navigator.storage.persist();
 
+$('.topbar .brand').innerHTML = mascot('happy', 32) + ' 뜨개 노트';
 route();
 migrateImages();
 </script>
