@@ -289,6 +289,41 @@ table.ref th{color:var(--muted);font-weight:500}
 .sync-btn.spin{animation:spin 1.2s linear infinite}
 .sync-btn.warn{background:var(--amber-soft);border-radius:10px}
 @keyframes spin{to{transform:rotate(360deg)}}
+/* 뜨개 일기 */
+.dmonth{font-family:var(--hand);font-size:24px}
+.dsum{display:flex;gap:6px 16px;flex-wrap:wrap;justify-content:center;font-size:13px;color:var(--muted);margin-bottom:10px}
+.dsum b{color:var(--text);font-size:15px}
+.dgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dwk{text-align:center;font-size:12px;color:var(--muted);padding:2px 0}
+.dwk.sun{color:#d4705a}.dwk.sat{color:#5b86b0}
+.dcell{aspect-ratio:1/1.05;border:1px dashed transparent;background:none;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:4px 2px;gap:1px;color:var(--text);min-width:0}
+.dcell.empty-c{cursor:default}
+.dcell:hover:not(.empty-c){background:var(--surface-2)}
+.dcell .dnum{font-size:13px}
+.dcell .dstamp{font-size:16px;line-height:1}
+.dcell .drows{font-size:10px;color:var(--accent);font-weight:800;white-space:nowrap}
+.dcell.has{background:var(--note-1)}
+.dcell.today{border-color:var(--accent)}
+.dcell.today .dnum{font-weight:800;color:var(--accent)}
+.dcell.sel{outline:2px solid var(--accent);outline-offset:-2px;background:var(--accent-soft)}
+.diary-page .dday{font-family:var(--hand);font-size:24px;margin-bottom:8px}
+.drowlist,.devents{margin:0 0 10px;padding-left:20px;line-height:1.9}
+.devents{list-style:none;padding-left:0;color:var(--muted);font-size:14px}
+.dphoto{width:86px;height:86px;border-radius:6px;overflow:hidden;background:#fff;padding:4px 4px 12px;box-shadow:0 3px 8px -4px rgba(0,0,0,.35);transform:rotate(-3deg)}
+.dphoto img{width:100%;height:100%;object-fit:cover}
+.year-sum .ys-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;text-align:center;margin-bottom:10px}
+.year-sum .ys-grid b{display:block;font-size:26px;font-weight:800;color:var(--accent);line-height:1.2}
+.year-sum .ys-grid span{font-size:12px;color:var(--muted)}
+@media (max-width:560px){ .year-sum .ys-grid{grid-template-columns:repeat(3,1fr)} }
+@media (max-width:820px){ .bottom .nav-btn{font-size:10px;padding:6px 0} .bottom .nav-btn .ico{font-size:19px} }
+/* 고르게 늘리기 결과 / 용어 사전 */
+.ev-steps{margin:14px 0 0;padding-left:22px;line-height:2}
+.ev-steps b{color:var(--accent)}
+.explain code{background:var(--surface-2);padding:2px 6px;border-radius:6px;font-size:13px}
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:2px 18px;margin-top:12px}
+.term{display:flex;gap:12px;padding:8px 2px;border-bottom:1px dashed var(--border);align-items:flex-start}
+.term-a{min-width:92px;font-family:ui-monospace,Consolas,monospace;color:var(--accent);font-size:14px;padding-top:1px}
+dialog .terms{grid-template-columns:1fr}
 /* 자동으로 채운 칸 */
 .autofilled{background:var(--note-1) !important;border-color:var(--amber) !important}
 /* 도안 필터 */
@@ -577,6 +612,7 @@ main h1::after{content:"";display:inline-block;width:30px;height:30px;margin-lef
       <button class="vbtn vinfo" data-action="vZoom" data-d="0" id="vZoom" title="화면 너비에 맞추기">100%</button>
       <button class="vbtn" data-action="vZoom" data-d="0.25" aria-label="확대">＋</button>
     </div>
+    <button class="vbtn" data-action="glossary" title="영문 도안 용어 찾기">📖</button>
     <button class="vbtn" data-action="vFull" title="전체 화면">⛶</button>
     <a class="vbtn" id="vOpen" target="_blank" rel="noopener" title="새 탭에서 열기 (인쇄·다운로드)">⤴</a>
   </div>
@@ -603,7 +639,7 @@ const US_SIZES = [[2,'0'],[2.25,'1'],[2.75,'2'],[3,'2½'],[3.25,'3'],[3.5,'4'],[
 const PROJECT_EMOJI = ['🧶','🧣','🧤','🧦','👒','🧥','👕','🎒','🧸','🪡'];
 
 let db = load();
-function blank(){ return {projects:[], patterns:[], gauges:[], yarns:[], needles:[], settings:{theme:'auto'}}; }
+function blank(){ return {projects:[], patterns:[], gauges:[], yarns:[], needles:[], diary:[], settings:{theme:'auto'}}; }
 function load(){
   try{ const d = JSON.parse(localStorage.getItem(KEY)); if(d && d.projects) return migrate(Object.assign(blank(), d)); }catch(e){}
   return blank();
@@ -617,6 +653,7 @@ function migrate(d){
       delete g.sts; delete g.rows; delete g.blocked;
     }
   });
+  if(!Array.isArray(d.diary)) d.diary = [];
   return d;
 }
 function persistLocal(){
@@ -628,7 +665,9 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
 const fmt = (n, d=1) => isFinite(n) ? (Math.round(n * 10**d) / 10**d).toLocaleString('ko-KR') : '—';
-const today = () => new Date().toISOString().slice(0,10);
+/* 한국 시간 기준 오늘 날짜 (toISOString은 세계 표준시라 아침 9시 전엔 어제로 나옴) */
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const today = () => ymd(new Date());
 const byId = (coll, id) => db[coll].find(x => x.id === id);
 const $ = (s, el=document) => el.querySelector(s);
 const $$ = (s, el=document) => [...el.querySelectorAll(s)];
@@ -746,10 +785,10 @@ applyTheme();
 
 /* ============ 네비게이션 ============ */
 const NAV = [
-  ['home','🏠','홈'],['projects','🧶','프로젝트'],['calc','🧮','게이지 계산기'],['gauges','📏','게이지 기록'],['stash','🧺','실·바늘 보관함']
+  ['home','🏠','홈'],['projects','🧶','프로젝트'],['calc','🧮','계산기·용어'],['gauges','📏','게이지 기록'],['stash','🧺','실·바늘 보관함']
 ];
-NAV.splice(2, 0, ['patterns','📖','도안 보관함']);
-const NAV_SHORT = {home:'홈',projects:'프로젝트',patterns:'도안',calc:'계산기',gauges:'게이지',stash:'보관함'};
+NAV.splice(2, 0, ['patterns','📖','도안 보관함'], ['diary','📅','뜨개 일기']);
+const NAV_SHORT = {home:'홈',projects:'프로젝트',patterns:'도안',diary:'일기',calc:'계산기',gauges:'게이지',stash:'보관함'};
 function renderNav(cur){
   $('#side').innerHTML = `<div class="brand">${mascot('happy', 40)} 뜨개 노트</div>` +
     NAV.map(([k,i,l]) => `<a class="nav-btn ${cur===k?'active':''}" href="#/${k}"><span class="ico">${i}</span>${l}</a>`).join('') +
@@ -776,6 +815,7 @@ function route(){
     case 'projects': view.innerHTML = viewProjects(); fab.onclick = () => editProject(); break;
     case 'project': view.innerHTML = viewProject(id); fab.style.display = 'none'; break;
     case 'patterns': view.innerHTML = viewPatterns(); fab.onclick = () => editPattern(); break;
+    case 'diary': view.innerHTML = viewDiary(); fab.style.display = 'none'; break;
     case 'calc': view.innerHTML = viewCalc(); fab.style.display = 'none'; bindCalc(); break;
     case 'gauges': view.innerHTML = viewGauges(); fab.onclick = () => editGauge(); break;
     case 'stash': view.innerHTML = viewStash(); fab.onclick = () => ui.stashTab === 'yarn' ? editYarn() : editNeedle(); break;
@@ -1051,6 +1091,7 @@ function editProject(id, preset){
     if(oldPhoto && oldPhoto !== vals.photo) deleteImage(oldPhoto);
     if(p){ Object.assign(p, vals, {updated: Date.now()}); }
     else {
+      logEvent(`🧶 '${vals.name}' 시작`);
       db.projects.push(Object.assign({id: uid(), progress:0, notes:'', counters:[{id: uid(), name:'단', value:0, target:0, repeat:0}, {id: uid(), name:'늘림', value:0, target:0, repeat:0}], created: Date.now(), updated: Date.now()}, vals));
     }
     save();
@@ -1074,10 +1115,28 @@ function cin(key, label, ph='', hint=''){
   return `<div class="field"><label>${label}</label><input type="number" inputmode="decimal" step="any" min="0" data-calc="${key}" value="${esc(ui.calc[key] ?? '')}" placeholder="${ph}">${hint ? `<span class="hint">${hint}</span>` : ''}</div>`;
 }
 function viewCalc(){
-  const tabs = [['size','치수 → 코·단'],['convert','도안 게이지 맞추기'],['measure','코·단 → 치수'],['yarn','실 필요량']];
+  const tabs = [['size','치수 → 코·단'],['convert','도안 게이지 맞추기'],['measure','코·단 → 치수'],['even','고르게 늘리기·줄이기'],['yarn','실 필요량'],['terms','📖 영문 용어']];
   if(!tabs.some(x => x[0] === ui.calcTab)) ui.calcTab = 'size';
   const t = ui.calcTab, u = U(), inch = isIn();
   let body = '';
+  if(t === 'even'){
+    const mode = ui.calc.ev_mode || 'inc', shape = ui.calc.ev_shape || 'round';
+    body = `
+    <div class="card"><h2>지금 코 수와 늘릴(줄일) 코 수</h2>
+      <div class="row" style="margin-bottom:12px">
+        <div class="seg"><button class="${mode==='inc'?'active':''}" data-action="evSet" data-k="ev_mode" data-v="inc">늘리기</button><button class="${mode==='dec'?'active':''}" data-action="evSet" data-k="ev_mode" data-v="dec">줄이기</button></div>
+        <div class="seg"><button class="${shape==='round'?'active':''}" data-action="evSet" data-k="ev_shape" data-v="round">원통(돌려뜨기)</button><button class="${shape==='flat'?'active':''}" data-action="evSet" data-k="ev_shape" data-v="flat">평면(왕복뜨기)</button></div>
+      </div>
+      <div class="inline-inputs">${cin('ev_s','지금 코 수','88')}${cin('ev_n', mode === 'inc' ? '늘릴 코 수' : '줄일 코 수', '12')}</div>
+      <p class="small muted" style="margin-bottom:0">도안의 "고르게 12코 늘리세요(increase 12 sts evenly)" 같은 부분을 계산해요.</p>
+    </div>
+    <div class="card"><h2>이렇게 떠요</h2><div class="result"><div class="result-row">
+      <div><div class="lbl">뜬 뒤 코 수</div><div class="big" id="r_ev_total">—</div></div>
+      <div><div class="lbl">몇 코마다</div><div class="big" id="r_ev_every">—</div></div></div></div>
+      <ol class="ev-steps" id="r_ev_steps"></ol>
+      <div class="explain" id="r_ev_en"></div></div>`;
+  }
+  if(t === 'terms') body = `<div class="card" style="grid-column:1/-1">${glossaryHTML(ui.termQ || '')}</div>`;
   if(t === 'size') body = `
     <div class="card"><h2>내 게이지와 원하는 치수</h2>
       <div class="inline-inputs">${gaugeSelect('sz')}${cin('g_s',`${u.g} 코 수`, inch ? '22' : '22')}${cin('g_r',`${u.g} 단 수`,'30')}${cin('sz_w',`원하는 가로 (${u.l})`, inch ? '20' : '50')}${cin('sz_h',`원하는 세로 (${u.l})`, inch ? '24' : '60')}${cin('sz_m','무늬 반복 코 수 (선택)','예: 4','계산된 코 수를 이 배수에 맞춰요')}${cin('sz_e','가장자리 코 추가 (선택)','예: 2','양쪽 겉뜨기 테두리 등')}</div>
@@ -1112,14 +1171,119 @@ function viewCalc(){
       <div><div class="lbl">필요한 볼 수</div><div class="big" id="r_y_b">—</div></div></div></div>
       <div class="explain" id="r_y_x"></div></div>`;
   return `
-  <div class="page-head"><div><h1>게이지 계산기</h1><p class="sub">입력하는 즉시 계산돼요. 입력값은 탭을 옮겨도 유지돼요.</p></div>
+  <div class="page-head"><div><h1>뜨개 계산기</h1><p class="sub">입력하는 즉시 계산돼요. 입력값은 탭을 옮겨도 유지돼요.</p></div>
     <div class="row"><div class="seg" title="해외 도안은 인치(4인치당)로 적힌 경우가 많아요">
       <button class="${inch ? '' : 'active'}" data-action="setUnit" data-v="cm">cm</button><button class="${inch ? 'active' : ''}" data-action="setUnit" data-v="in">인치</button></div>
     <button class="btn sm" data-action="clearCalc">입력 초기화</button></div></div>
   <div class="seg" style="margin-bottom:18px">${tabs.map(([k,l]) => `<button class="${t===k?'active':''}" data-action="calcTab" data-v="${k}">${l}</button>`).join('')}</div>
   <div class="calc-grid">${body}</div>
-  <p class="small muted" style="margin-top:14px">💡 ${inch ? '인치 모드: 게이지는 <b>4인치(10.16cm)</b> 안의 코·단 수예요. 저장된 게이지를 불러오면 4인치 기준으로 바꿔서 넣어 드려요.' : '게이지는 <b>10cm × 10cm</b> 안의 코 수(가로)와 단 수(세로)예요. 해외 도안의 "4 inches" 게이지는 위에서 <b>인치</b>를 눌러 그대로 입력하세요.'}</p>`;
+  ${t === 'terms' || t === 'even' ? '' : `<p class="small muted" style="margin-top:14px">💡 ${inch ? '인치 모드: 게이지는 <b>4인치(10.16cm)</b> 안의 코·단 수예요. 저장된 게이지를 불러오면 4인치 기준으로 바꿔서 넣어 드려요.' : '게이지는 <b>10cm × 10cm</b> 안의 코 수(가로)와 단 수(세로)예요. 해외 도안의 "4 inches" 게이지는 위에서 <b>인치</b>를 눌러 그대로 입력하세요.'}</p>`}`;
 }
+/* ---------- 고르게 늘리기·줄이기 ----------
+   s코를 여러 구간으로 최대한 고르게 나누고, 구간 사이에 늘림(M1) 또는 2코 모아뜨기(k2tog)를 넣어요. */
+function splitEven(total, parts){ const a = []; for(let i = 0; i < parts; i++) a.push(Math.floor((i + 1) * total / parts) - Math.floor(i * total / parts)); return a; }
+function evenPlan(s, n, mode, shape){
+  if(!(s > 0 && n > 0)) return null;
+  if(mode === 'dec' && n * 2 > s) return {error: `${s}코에서는 최대 ${Math.floor(s / 2)}코까지 줄일 수 있어요.`};
+  const plain = mode === 'inc' ? s : s - n * 2;           /* 늘림·모아뜨기 말고 그냥 뜨는 코 */
+  const segs = splitEven(plain, n);
+  const act = mode === 'inc' ? {ko: '1코 늘림', en: 'M1'} : {ko: '2코 모아뜨기', en: 'k2tog'};
+  /* [뜨는 코, 동작] 묶음으로 만들기
+     원통: (k, 동작) × n
+     평면: 구간 하나를 반으로 나눠 양 끝에 두기 → k(앞 절반), 동작, (k, 동작)…, k(뒤 절반) */
+  const units = [];
+  if(shape === 'round') segs.forEach(k => units.push({k, act: true}));
+  else {
+    const edge = segs.pop(), first = Math.floor(edge / 2), last = edge - first;
+    units.push({k: first, act: true});
+    segs.forEach(k => units.push({k, act: true}));
+    if(last) units.push({k: last, act: false});
+  }
+  /* 같은 묶음이 이어지면 "× n번", 묶음 덩어리가 되풀이되면 "다음을 n번 반복"으로 줄이기 */
+  const toRuns = list => { const runs = []; for(const u of list){ const r = runs[runs.length - 1]; if(r && r.k === u.k && r.act === u.act) r.times++; else runs.push({...u, times: 1}); } return runs; };
+  const koOne = r => { const one = r.act ? (r.k ? `겉뜨기 ${r.k}코 + ${act.ko}` : act.ko) : `겉뜨기 ${r.k}코`; return r.times > 1 ? `(${one}) × <b>${r.times}번</b>` : one; };
+  const enOne = r => { const one = r.act ? (r.k ? `k${r.k}, ${act.en}` : act.en) : `k${r.k}`; return r.times > 1 ? `[${one}] ×${r.times}` : one; };
+  const head = shape === 'flat' ? [units[0]] : [], tail = shape === 'flat' && !units[units.length - 1].act ? [units[units.length - 1]] : [];
+  const body = units.slice(head.length, units.length - tail.length);
+  /* 가장 짧게 되풀이되는 덩어리 찾기 */
+  let period = body.length;
+  for(let p = 1; p <= body.length / 2; p++){
+    if(body.every((u, i) => u.k === body[i % p].k && u.act === body[i % p].act)){ period = p; break; }
+  }
+  const reps = Math.floor(body.length / period), block = toRuns(body.slice(0, period)), rest = body.slice(reps * period);
+  const ko = [], en = [];
+  head.forEach(u => { if(u.k || u.act){ ko.push(koOne({...u, times: 1})); en.push(enOne({...u, times: 1})); } });
+  if(reps > 1 && block.length > 1){
+    ko.push(`다음을 <b>${reps}번</b> 반복: ${block.map(koOne).join(', ')}`); en.push(`*${block.map(enOne).join(', ')}; rep from * ${reps} times`);
+    toRuns(rest).forEach(r => { ko.push(koOne(r)); en.push(enOne(r)); });
+  }
+  else toRuns(body).forEach(r => { ko.push(koOne(r)); en.push(enOne(r)); });
+  tail.forEach(u => { ko.push(koOne({...u, times: 1})); en.push(enOne({...u, times: 1})); });
+  const enStr = en.join(', ');
+  let ks = (shape === 'flat' ? units.slice(1) : units).filter(u => u.act).map(u => u.k);
+  if(!ks.length) ks = [plain];
+  const lo = Math.min(...ks), hi = Math.max(...ks);
+  const every = mode === 'inc' ? (lo === hi ? `${lo}코마다` : `${lo}~${hi}코마다`) : (lo === hi ? `${lo + 2}코마다` : `${lo + 2}~${hi + 2}코마다`);
+  return {total: mode === 'inc' ? s + n : s - n, every, ko, en: enStr};
+}
+
+/* ---------- 📖 영문 도안 용어 사전 ---------- */
+const GLOSSARY = [
+  ['k', 'knit', '겉뜨기', ''], ['p', 'purl', '안뜨기', ''], ['st(s)', 'stitch(es)', '코', ''], ['rnd(s)', 'round(s)', '단 (원통으로 돌려뜨기)', ''],
+  ['RS / WS', 'right side / wrong side', '겉면 / 안면', '편물의 앞쪽·뒤쪽'], ['CO', 'cast on', '코 잡기', ''], ['BO', 'bind off', '코 막음 (덮어씌워 막기)', ''],
+  ['k2tog', 'knit 2 together', '왼코 위 2코 모아뜨기', '2코를 한꺼번에 겉뜨기 → 오른쪽으로 기울어요'],
+  ['ssk', 'slip, slip, knit', '오른코 위 2코 모아뜨기', '2코를 하나씩 겉뜨기 방향으로 옮긴 뒤 함께 떠요 → 왼쪽으로 기울어요'],
+  ['skp / skpo', 'slip 1, knit 1, pass slipped st over', '오른코 위 2코 모아뜨기 (덮어씌우기)', '1코 옮기고 1코 뜬 다음 옮긴 코를 덮어씌워요'],
+  ['p2tog', 'purl 2 together', '안뜨기로 2코 모아뜨기', ''], ['k3tog', 'knit 3 together', '왼코 위 3코 모아뜨기', ''],
+  ['sk2p / sssk', 'slip 1, k2tog, pass over', '오른코 위 3코 모아뜨기', ''], ['s2kp / cdd', 'centered double decrease', '중심 3코 모아뜨기', '가운데 코가 위로 올라와요'],
+  ['yo', 'yarn over', '걸기코 (바늘 비우기)', '바늘에 실을 한 번 걸어 구멍 + 1코 늘림'],
+  ['M1 / M1L', 'make 1 (left)', '왼코 늘림 (사이 실 감아 늘리기)', '코 사이 실을 앞에서 뒤로 걸어 꼬아 떠요'], ['M1R', 'make 1 right', '오른코 늘림', '코 사이 실을 뒤에서 앞으로 걸어 떠요'],
+  ['kfb', 'knit front and back', '1코에서 2코 늘리기 (앞뒤로 뜨기)', ''], ['pfb', 'purl front and back', '안뜨기로 앞뒤 늘리기', ''],
+  ['LLI / RLI', 'left / right lifted increase', '아랫단 코 끌어올려 늘리기', ''],
+  ['sl / sl1', 'slip (1)', '걸러뜨기 (뜨지 않고 옮기기)', ''], ['wyif / wyib', 'with yarn in front / back', '실을 앞에 / 뒤에 두고', ''],
+  ['kwise / pwise', 'knitwise / purlwise', '겉뜨기 방향으로 / 안뜨기 방향으로', '코를 옮기는 방향'],
+  ['tbl', 'through back loop', '꼬아뜨기 (뒤쪽 고리로)', 'k1tbl = 꼬아 겉뜨기'],
+  ['pm / sm / rm', 'place / slip / remove marker', '마커 걸기 / 옮기기 / 빼기', ''], ['BOR', 'beginning of round', '단 시작점', ''],
+  ['rep', 'repeat', '반복', ''], ['* … ; rep from *', 'repeat from *', '* 부터 ; 까지를 반복', ''], ['( ) / [ ]', 'repeat in brackets', '괄호 안을 정해진 횟수만큼 반복', ''],
+  ['inc / dec', 'increase / decrease', '늘림 / 줄임', ''], ['beg', 'beginning', '시작', ''], ['cont', 'continue', '계속', ''], ['foll', 'following', '다음의', ''],
+  ['alt / EOR', 'alternate / every other row', '격단으로 (2단마다)', ''], ['tog', 'together', '함께 (모아)', ''], ['approx', 'approximately', '약', ''],
+  ['WE / work even', 'work even', '늘림·줄임 없이 그대로 뜨기', ''], ['in patt', 'in pattern', '무늬대로', ''],
+  ['St st', 'stockinette stitch', '메리야스뜨기', ''], ['rev St st', 'reverse stockinette', '안메리야스뜨기', ''], ['garter st', 'garter stitch', '가터뜨기', ''],
+  ['rib / 1x1 rib', 'ribbing', '고무뜨기 / 1코 고무뜨기', ''], ['seed / moss st', 'seed stitch', '멍석뜨기', ''],
+  ['C4F / C4B', 'cable 4 front / back', '4코 꽈배기 (앞 교차 / 뒤 교차)', 'F: 꽈배기 바늘을 앞에 → 왼쪽으로 기울어요 / B: 뒤에 → 오른쪽으로'],
+  ['cn', 'cable needle', '꽈배기 바늘', ''], ['w&t', 'wrap and turn', '감아서 돌려뜨기 (되돌아뜨기)', ''],
+  ['GSR / DS', 'German short rows / double stitch', '저먼 되돌아뜨기 / 더블 스티치', ''],
+  ['pu / PUK', 'pick up (and knit)', '코 줍기', ''], ['LH / RH', 'left / right hand needle', '왼 바늘 / 오른 바늘', ''],
+  ['DPN', 'double-pointed needles', '장갑바늘 (양쪽 바늘)', ''], ['circ', 'circular needle', '줄바늘', ''], ['magic loop', 'magic loop', '매직 루프 (긴 줄바늘로 작은 원통 뜨기)', ''],
+  ['provisional CO', 'provisional cast on', '별사슬 코 잡기 (임시 코잡기)', ''], ['long-tail CO', 'long-tail cast on', '손가락 코잡기 (일반 코잡기)', ''],
+  ['kitchener st / graft', 'kitchener stitch', '메리야스 잇기 (키치너)', ''], ['MC / CC', 'main / contrast color', '바탕색 / 배색', ''],
+  ['gauge / tension', 'gauge', '게이지', ''], ['ease', 'ease', '여유분 (몸 치수보다 크게/작게)', ''], ['yoke / raglan', 'yoke / raglan', '요크 / 래글런', ''],
+  ['selvage', 'selvage / selvedge', '가장자리 코', ''], ['block', 'blocking', '블로킹 (세탁해 모양 잡기)', ''],
+  ['frog / tink', 'rip it / knit backwards', '풀기 / 한 코씩 되돌려 풀기', ''], ['WIP / FO / UFO', 'work in progress / finished / unfinished object', '뜨는 중 / 완성작 / 방치된 미완성작', ''],
+];
+function glossaryHTML(q){
+  const s = q.trim().toLowerCase();
+  const list = GLOSSARY.filter(g => !s || g.join(' ').toLowerCase().includes(s));
+  return `<input class="search" type="search" placeholder="약어나 뜻으로 찾기 (예: ssk, 늘림, cable)" value="${esc(q)}" data-term-search autofocus>
+    <div class="terms">${list.map(([a, en, ko, how]) => `<div class="term"><b class="term-a">${esc(a)}</b><div><div>${esc(ko)} <span class="muted small">${esc(en)}</span></div>${how ? `<div class="small muted">${esc(how)}</div>` : ''}</div></div>`).join('') || '<p class="muted">찾는 용어가 없어요.</p>'}</div>`;
+}
+function openGlossary(){
+  const dlg = $('#dlg');
+  dlg.innerHTML = `<div class="dlg-head"><h2>📖 영문 도안 용어</h2><button type="button" class="icon-btn" data-action="closeDlg" aria-label="닫기">✕</button></div><div class="dlg-body" id="glossBody">${glossaryHTML('')}</div>`;
+  dlg.showModal();
+  bindTermSearch(dlg);
+}
+function bindTermSearch(root){
+  const inp = $('[data-term-search]', root); if(!inp) return;
+  inp.addEventListener('input', () => {
+    ui.termQ = inp.value;
+    const box = inp.parentElement, pos = inp.selectionStart;
+    box.innerHTML = glossaryHTML(inp.value);
+    bindTermSearch(box);
+    const again = $('[data-term-search]', box); again.focus(); try{ again.setSelectionRange(pos, pos); }catch(e){}
+  });
+}
+
 function roundTo(n, m){ return m > 0 ? Math.round(n / m) * m : Math.round(n); }
 function calcUpdate(){
   const inch = isIn(), u = U();
@@ -1161,6 +1325,15 @@ function calcUpdate(){
     const w = c('m_gs') ? c('m_s') / c('m_gs') * 10 : 0, h = c('m_gr') ? c('m_r') / c('m_gr') * 10 : 0;
     set('r_m_w', w ? fmt(L(w)) + `<small>${u.l}</small>` : '—'); set('r_m_h', h ? fmt(L(h)) + `<small>${u.l}</small>` : '—');
   }
+  if(t === 'even'){
+    const r = evenPlan(Math.round(num(ui.calc.ev_s)), Math.round(num(ui.calc.ev_n)), ui.calc.ev_mode || 'inc', ui.calc.ev_shape || 'round');
+    if(!r || r.error){ set('r_ev_total', '—'); set('r_ev_every', '—'); set('r_ev_steps', r ? `<li class="need-short">${r.error}</li>` : '<li class="muted">지금 코 수와 늘릴(줄일) 코 수를 입력하세요.</li>'); set('r_ev_en', ''); }
+    else {
+      set('r_ev_total', r.total + '<small>코</small>'); set('r_ev_every', r.every);
+      set('r_ev_steps', r.ko.map(x => `<li>${x}</li>`).join('') + `<li class="muted">끝! 이제 ${r.total}코가 돼요.</li>`);
+      set('r_ev_en', `영문 도안식: <code>${esc(r.en)}</code>`);
+    }
+  }
   if(t === 'yarn'){
     const sa = c('y_sw') * c('y_sh');
     const g = sa ? c('y_sg') / sa * c('y_area') * 1.1 : 0;
@@ -1181,6 +1354,7 @@ function setUnit(unit){
   toast(toIn ? '인치 모드 (게이지는 4인치당)' : 'cm 모드 (게이지는 10cm당)');
 }
 function bindCalc(){
+  bindTermSearch($('#view'));
   $$('[data-calc]').forEach(el => el.addEventListener('input', () => { ui.calc[el.dataset.calc] = el.value; calcUpdate(); }));
   $$('[data-gauge-pick]').forEach(el => el.addEventListener('change', () => {
     const g = byId('gauges', el.value); if(!g) return;
@@ -2133,6 +2307,103 @@ $('#vPages').addEventListener('scroll', () => {
 }, {passive: true});
 window.addEventListener('resize', () => { if(!$('#viewer').hidden && vw.pdf){ clearTimeout(vw.rt); vw.rt = setTimeout(() => setZoom(vw.zoom), 250); } });
 
+/* ============ 📅 뜨개 일기 ============
+   - 프로젝트의 첫 번째(단) 카운터를 ＋할 때마다 그날 그 프로젝트의 단 수가 자동으로 쌓여요.
+   - 시작·부분 완성·완성 같은 일도 자동으로 적히고, 하루 메모와 사진을 붙일 수 있어요.
+   - 날짜(YYYY-MM-DD)가 id라서 동기화 때 같은 날 기록끼리 합쳐져요. */
+const WEEK = '일월화수목금토';
+function diaryEntry(date = today(), create = true){
+  let e = db.diary.find(x => x.id === date);
+  if(!e && create){ e = {id: date, rows: {}, events: [], note: '', photo: ''}; db.diary.push(e); }
+  return e;
+}
+function logRows(pid, d){
+  const e = diaryEntry(today(), d > 0); if(!e) return;
+  e.rows = e.rows || {};
+  e.rows[pid] = Math.max(0, (e.rows[pid] || 0) + d);
+  if(!e.rows[pid]) delete e.rows[pid];
+}
+function logEvent(text){ const e = diaryEntry(); e.events = e.events || []; if(!e.events.includes(text)) e.events.push(text); }
+const entryRows = e => Object.values((e && e.rows) || {}).reduce((s, v) => s + v, 0);
+const entryHasAny = e => e && (entryRows(e) || (e.events || []).length || e.note || e.photo);
+function knitStreak(){
+  let n = 0; const d = new Date();
+  if(!entryHasAny(diaryEntry(ymd(d), false))) d.setDate(d.getDate() - 1);   /* 오늘 아직 안 떴으면 어제부터 셈 */
+  while(entryHasAny(diaryEntry(ymd(d), false)) && n < 3650){ n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+function viewDiary(){
+  const now = new Date();
+  const [Y, M] = (ui.dMonth || today().slice(0, 7)).split('-').map(Number);
+  const sel = ui.dSel || today();
+  const first = new Date(Y, M - 1, 1), days = new Date(Y, M, 0).getDate();
+  const monthKey = `${Y}-${String(M).padStart(2, '0')}`;
+  const monthEntries = db.diary.filter(e => e.id.startsWith(monthKey) && entryHasAny(e));
+  const monthRows = monthEntries.reduce((s, e) => s + entryRows(e), 0);
+  const cells = [];
+  for(let i = 0; i < first.getDay(); i++) cells.push('<div class="dcell empty-c"></div>');
+  for(let d = 1; d <= days; d++){
+    const id = `${monthKey}-${String(d).padStart(2, '0')}`, e = diaryEntry(id, false), rows = entryRows(e);
+    const done = e && (e.events || []).some(x => x.startsWith('🎉'));
+    cells.push(`<button class="dcell ${id === sel ? 'sel' : ''} ${id === today() ? 'today' : ''} ${entryHasAny(e) ? 'has' : ''}" data-action="dSel" data-v="${id}">
+      <span class="dnum">${d}</span>${e && e.photo ? '<span class="dstamp">📷</span>' : done ? '<span class="dstamp">🎉</span>' : entryHasAny(e) ? '<span class="dstamp">🧶</span>' : ''}${rows ? `<span class="drows">${rows}단</span>` : ''}</button>`);
+  }
+  const e = diaryEntry(sel, false) || {id: sel, rows: {}, events: [], note: '', photo: ''};
+  const sd = new Date(sel + 'T00:00:00');
+  const rowsList = Object.entries(e.rows || {}).map(([pid, n]) => { const p = byId('projects', pid); return `<li><a href="#/project/${pid}">${esc(p ? p.name : '지운 프로젝트')}</a> · <b>${n}단</b></li>`; }).join('');
+  return `
+  <div class="page-head"><div><h1>뜨개 일기</h1><p class="sub">카운터를 누르면 그날 뜬 단 수가 저절로 적혀요. 한 줄 메모와 사진도 남겨 보세요.</p></div></div>
+  <div class="grid cols-2" style="align-items:start">
+    <div class="card tape">
+      <div class="row between" style="margin-bottom:10px">
+        <button class="btn sm ghost" data-action="dMonth" data-d="-1" aria-label="지난달">‹</button>
+        <b class="dmonth">${Y}년 ${M}월</b>
+        <button class="btn sm ghost" data-action="dMonth" data-d="1" aria-label="다음달">›</button>
+      </div>
+      <div class="dsum"><span>🧶 뜬 날 <b>${monthEntries.filter(x => entryRows(x)).length}</b>일</span><span>📏 <b>${monthRows}</b>단</span><span>🔥 연속 <b>${knitStreak()}</b>일</span></div>
+      <div class="dgrid">${[...WEEK].map((w, i) => `<div class="dwk ${i === 0 ? 'sun' : i === 6 ? 'sat' : ''}">${w}</div>`).join('')}${cells.join('')}</div>
+      ${monthKey !== today().slice(0, 7) ? '<div style="text-align:center;margin-top:8px"><button class="btn sm" data-action="dToday">오늘로</button></div>' : ''}
+    </div>
+    <div class="card diary-page">
+      <div class="dday">${sd.getMonth() + 1}월 ${sd.getDate()}일 ${WEEK[sd.getDay()]}요일${sel === today() ? ' <span class="part-badge">오늘</span>' : ''}</div>
+      ${rowsList ? `<ul class="drowlist">${rowsList}</ul>` : `<p class="small muted">이날 카운터로 센 단이 없어요.</p>`}
+      ${(e.events || []).length ? `<ul class="devents">${e.events.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+      <textarea data-diary-note="${sel}" placeholder="오늘의 뜨개 한 줄… (자동 저장)&#10;예: 요크 늘림 끝! 생각보다 실이 많이 든다">${esc(e.note || '')}</textarea>
+      <div class="row" style="margin-top:10px">
+        ${e.photo ? `<div class="dphoto">${imgTag(e.photo)}</div>` : ''}
+        <label class="btn sm">📷 ${e.photo ? '사진 바꾸기' : '사진 붙이기'}<input type="file" accept="image/*" hidden data-diary-photo="${sel}"></label>
+        ${e.photo ? `<button class="btn sm ghost danger" data-action="dPhotoDel" data-v="${sel}">사진 빼기</button>` : ''}
+      </div>
+    </div>
+  </div>
+  ${yearSummary(now.getFullYear())}`;
+}
+/* 올해 결산 */
+function yearSummary(year){
+  const y = String(year);
+  const done = db.projects.filter(p => p.status === 'done' && (p.end || '').startsWith(y));
+  const started = db.projects.filter(p => (p.start || '').startsWith(y));
+  const entries = db.diary.filter(e => e.id.startsWith(y));
+  const rows = entries.reduce((s, e) => s + entryRows(e), 0);
+  const knitDays = entries.filter(e => entryRows(e)).length;
+  const meters = done.reduce((s, p) => s + (p.yarnUses || []).reduce((t, u) => { const yy = byId('yarns', u.yarnId); return t + (yy ? num(u.skeins) * num(yy.meters) : 0); }, 0), 0);
+  const byMonth = {}; entries.forEach(e => { const m = +e.id.slice(5, 7); byMonth[m] = (byMonth[m] || 0) + entryRows(e); });
+  const best = Object.entries(byMonth).sort((a, b) => b[1] - a[1])[0];
+  if(!done.length && !started.length && !rows) return '';
+  return `<div class="section" style="margin-top:26px"><div class="section-head"><h2>${y}년 뜨개 결산</h2></div>
+    <div class="card year-sum">
+      <div class="ys-grid">
+        <div><b>${done.length}</b><span>완성작</span></div>
+        <div><b>${started.length}</b><span>새로 시작</span></div>
+        <div><b>${knitDays}</b><span>뜬 날</span></div>
+        <div><b>${rows.toLocaleString('ko-KR')}</b><span>뜬 단</span></div>
+        <div><b>${meters ? fmt(meters, 0) : '—'}</b><span>쓴 실 (m)</span></div>
+      </div>
+      ${done.length ? `<p class="small" style="margin-bottom:0">🎉 올해의 완성작: ${done.map(p => `<a href="#/project/${p.id}">${esc(p.name)}</a>`).join(', ')}</p>` : ''}
+      ${best ? `<p class="small muted" style="margin-bottom:0">가장 열심히 뜬 달은 <b>${best[0]}월</b> (${best[1]}단)이에요.</p>` : ''}
+    </div></div>`;
+}
+
 /* ============ 설정 ============ */
 function viewSettings(){
   let size = 0; try{ size = (localStorage.getItem(KEY) || '').length; }catch(e){}
@@ -2315,7 +2586,11 @@ const actions = {
   },
   count: d => {
     const p = getOwner(d.pid), c = p && (p.counters||[]).find(x => x.id === d.cid); if(!c) return;
-    c.value = Math.max(0, c.value + num(d.d)); p.updated = Date.now(); save();
+    const before = c.value;
+    c.value = Math.max(0, c.value + num(d.d)); p.updated = Date.now();
+    /* 프로젝트 첫 번째(단) 카운터는 뜨개 일기에 자동 기록 */
+    if(!String(d.pid).startsWith('pat:') && p.counters[0] === c && c.value !== before) logRows(p.id, c.value - before);
+    save();
     if(navigator.vibrate) navigator.vibrate(8);
     const rep = num(c.repeat);
     if(c.target && c.value === c.target && num(d.d) > 0) cheer(`🎯 ${c.name} ${c.target} 달성! 대단해!`);
@@ -2323,7 +2598,7 @@ const actions = {
     refresh();
   },
   addCounter: d => counterForm(d.pid), editCounter: d => counterForm(d.pid, d.cid),
-  finishProject: d => { const p = byId('projects', d.id); p.status = 'done'; p.progress = 100; p.end = p.end || today(); p.updated = Date.now(); save(); cheer('🎉 완성 축하해! 정말 멋지다!'); refresh(); },
+  finishProject: d => { const p = byId('projects', d.id); p.status = 'done'; p.progress = 100; p.end = p.end || today(); p.updated = Date.now(); logEvent(`🎉 '${p.name}' 완성!`); save(); cheer('🎉 완성 축하해! 정말 멋지다!'); refresh(); },
   setUnit: d => setUnit(d.v),
   useGauge: d => { const v = gaugeVals(byId("gauges", d.id)), f = isIn() ? 10.16 / 10 : 1, r1 = x => x ? String(Math.round(x * f * 10) / 10) : ""; ui.calc.g_s = ui.calc.cv_ms = ui.calc.m_gs = r1(v.sts); ui.calc.g_r = ui.calc.cv_mr = ui.calc.m_gr = r1(v.rows); ui.calcTab = "size"; location.hash = "#/calc"; toast(`${v.after ? "블로킹 후" : "블로킹 전"} 게이지를 불러왔어요`); },
   addYuse: d => { $('#yuseList').insertAdjacentHTML('beforeend', yuseRow({yarnId: db.yarns[0].id, skeins:1}, d.pid)); },
@@ -2332,7 +2607,7 @@ const actions = {
   /* 기록 백업: 프로젝트·실·바늘·게이지·도안 정보 + 프로젝트 사진 (도안 PDF 제외, 가벼움) */
   exportData: async () => {
     const images = {};
-    for(const p of db.projects) if(isRef(p.photo)){ const r = await idb.get('img:' + p.photo.slice(4)).catch(() => null); if(r) images[p.photo.slice(4)] = r.data; }
+    for(const ref of [...db.projects.map(p => p.photo), ...db.diary.map(e => e.photo)]) if(isRef(ref)){ const r = await idb.get('img:' + ref.slice(4)).catch(() => null); if(r) images[ref.slice(4)] = r.data; }
     const blob = new Blob([JSON.stringify({...db, kind:'knit-notes', images})], {type:'application/json'});
     downloadBlob(blob, `뜨개노트-기록-${today()}.json`);
     db.settings.lastRecordBackup = Date.now(); save(); refresh();
@@ -2378,6 +2653,12 @@ const actions = {
   projectFromPattern: d => { const pt = byId('patterns', d.id); editProject(null, {patternId: pt.id, name: pt.name}); },
   openPattern: d => openViewer(d.id, d.pid),
   patCat: d => { ui.patCat = d.v; refresh(); },
+  evSet: d => { ui.calc[d.k] = d.v; refresh(); },
+  dSel: d => { ui.dSel = d.v; refresh(); },
+  dToday: () => { ui.dMonth = today().slice(0, 7); ui.dSel = today(); refresh(); },
+  dMonth: d => { const [y, m] = (ui.dMonth || today().slice(0, 7)).split('-').map(Number); const t = new Date(y, m - 1 + num(d.d), 1); ui.dMonth = ymd(t).slice(0, 7); refresh(); },
+  dPhotoDel: d => { const e = diaryEntry(d.v, false); if(!e) return; deleteImage(e.photo); e.photo = ''; save(); refresh(); },
+  glossary: () => openGlossary(),
   bulkPick: () => {
     const inp = document.createElement('input'); inp.type = 'file'; inp.multiple = true; inp.accept = 'application/pdf,image/*';
     inp.onchange = () => bulkAddPatterns(inp.files); inp.click();
@@ -2401,6 +2682,7 @@ const actions = {
     x.done = true;
     const i = p.parts.indexOf(x), next = p.parts.slice(i + 1).find(y => !y.done) || p.parts.find(y => !y.done);
     p.curPart = next ? next.name : '';
+    logEvent(`✓ '${p.name}' ${x.name} 다 떴어요`);
     const pct = Math.round(p.parts.filter(y => y.done).length / p.parts.length * 100);
     if(pct > num(p.progress)) p.progress = pct;
     p.updated = Date.now(); save(); refresh();
@@ -2471,6 +2753,14 @@ document.addEventListener('click', e => {
 });
 $('#dlg').addEventListener('click', e => { if(e.target === $('#dlg')) $('#dlg').close(); });
 function bindInputs(){
+  /* 일기 메모·사진 */
+  $$('[data-diary-note]').forEach(el => { let t; el.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => { const e = diaryEntry(el.dataset.diaryNote); e.note = el.value; save(); }, 500); }); });
+  $$('[data-diary-photo]').forEach(el => el.addEventListener('change', async () => {
+    const f = el.files[0]; if(!f) return;
+    const e = diaryEntry(el.dataset.diaryPhoto);
+    try{ const ref = await storeImage(await shrinkImage(f, 900)); deleteImage(e.photo); e.photo = ref; save(); refresh(); toast('사진을 붙였어요 📷'); }
+    catch(err){ toast('사진을 저장하지 못했어요'); }
+  }));
   $$('[data-patf]').forEach(el => el.addEventListener('change', () => { (ui.patF = ui.patF || {})[el.dataset.patf] = el.value; refresh(); }));
   $$('[data-bind]').forEach(el => el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
     ui[el.dataset.bind] = el.value;
@@ -2583,7 +2873,7 @@ const GD_CLIENT_ID = '180386550892-hre935basfu92vsia7t5072ttu5a1lp5.apps.googleu
 const GD_SCOPE = 'https://www.googleapis.com/auth/drive.file';
 const GD_FOLDER = '뜨개노트';
 const GD_DATA = 'knit-notes-data.json';
-const SYNC_COLLS = ['projects','patterns','gauges','yarns','needles'];
+const SYNC_COLLS = ['projects','patterns','gauges','yarns','needles','diary'];
 const gd = { token: null, exp: 0, client: null, folderId: null, dataId: null, remoteMod: null, blobs: null, busy: false, again: false, state: 'off', last: 0, err: '' };
 
 /* ---- 변경 추적: save() 때마다 무엇이 바뀌었는지 비교해서 _u(수정 시각)를 찍어요 ---- */
@@ -2721,17 +3011,18 @@ async function syncNow(manual){
         if(rec){ setSyncState('sync', `도안 올리는 중: ${p.name}`); const f = await gdUpload(rec.blob.type ? rec.blob : new Blob([rec.blob], {type: rec.type}), `도안_${p.name}_${p.fileId}${p.fileType === 'pdf' ? '.pdf' : '.jpg'}`, p.fileId); gd.blobs.set(p.fileId, {id: f.id, modifiedTime: f.modifiedTime}); }
       }
     }
-    for(const p of db.projects) if(isRef(p.photo)){
-      const k = 'img:' + p.photo.slice(4); kids.add(k);
+    /* 프로젝트 사진 + 일기 사진 */
+    const photos = [...db.projects.map(p => [p.photo, `사진_${p.name}`]), ...db.diary.map(e => [e.photo, `일기_${e.id}`])].filter(([ref]) => isRef(ref));
+    for(const [ref, label] of photos){
+      const k = 'img:' + ref.slice(4); kids.add(k);
       if(!gd.blobs.has(k)){
         const r = await idb.get(k).catch(() => null);
-        if(r){ const f = await gdUpload(await dataURLToBlob(r.data), `사진_${p.name}_${p.photo.slice(4)}.jpg`, k); gd.blobs.set(k, {id: f.id, modifiedTime: f.modifiedTime}); }
-        else if(gd.blobs.has(k)){ /* 아래에서 받음 */ }
+        if(r){ const f = await gdUpload(await dataURLToBlob(r.data), `${label}_${ref.slice(4)}.jpg`, k); gd.blobs.set(k, {id: f.id, modifiedTime: f.modifiedTime}); }
       }
     }
     /* 3) 다른 기기에서 온 사진 받기 (작아서 바로 받아요) */
-    for(const p of db.projects) if(isRef(p.photo)){
-      const id = p.photo.slice(4), k = 'img:' + id;
+    for(const [ref] of photos){
+      const id = ref.slice(4), k = 'img:' + id;
       if(!(await idb.get(k).catch(() => null)) && gd.blobs.has(k)){
         const b = await gdDownload(gd.blobs.get(k).id); const data = await blobToDataURL(b);
         await idb.put(k, {data}); imgCache.set(id, data); changedLocal = true;
