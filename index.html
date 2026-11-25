@@ -285,6 +285,12 @@ table.ref th{color:var(--muted);font-weight:500}
 .part.cur::before{content:"🧶 "}
 .part-now{font-family:var(--hand);font-size:22px;color:var(--accent)}
 .part-badge{display:inline-block;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:1px 9px;font-size:12px;font-weight:700}
+/* 동기화 아이콘 */
+.sync-btn.spin{animation:spin 1.2s linear infinite}
+.sync-btn.warn{background:var(--amber-soft);border-radius:10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* 자동으로 채운 칸 */
+.autofilled{background:var(--note-1) !important;border-color:var(--amber) !important}
 /* 도안 필터 */
 .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
 .fsel{width:auto !important;padding:7px 10px !important;border-radius:999px !important;border-style:dashed !important;font-size:13px;color:var(--muted)}
@@ -546,6 +552,7 @@ main h1::after{content:"";display:inline-block;width:30px;height:30px;margin-lef
     <header class="topbar">
       <div class="brand">🧶 뜨개 노트</div>
       <div class="row" style="gap:2px">
+        <button class="icon-btn sync-btn" id="syncBtn" data-action="syncTap" hidden>☁️</button>
         <button class="icon-btn" data-action="toggleTheme" title="화면 테마 바꾸기">🌓</button>
         <a class="icon-btn" href="#/settings" title="설정·백업" style="text-decoration:none">⚙️</a>
       </div>
@@ -612,10 +619,11 @@ function migrate(d){
   });
   return d;
 }
-function save(){
+function persistLocal(){
   try{ localStorage.setItem(KEY, JSON.stringify(db)); return true; }
   catch(e){ toast('저장 공간이 부족해요. 사진 수를 줄이거나 백업 후 정리해 주세요.'); return false; }
 }
+function save(){ stampChanges(); const ok = persistLocal(); scheduleSync(); return ok; }
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
@@ -747,6 +755,7 @@ function renderNav(cur){
     NAV.map(([k,i,l]) => `<a class="nav-btn ${cur===k?'active':''}" href="#/${k}"><span class="ico">${i}</span>${l}</a>`).join('') +
     `<div class="spacer"></div>
      <div class="side-pet">${mascot('wink', 64)}<span>화이팅!</span></div>
+     ${db.settings.gdOn ? '<button class="nav-btn" data-action="syncTap"><span class="ico" id="syncIcoSide">☁️</span><span id="syncTxtSide">동기화됨</span></button>' : ''}
      <a class="nav-btn ${cur==='settings'?'active':''}" href="#/settings"><span class="ico">⚙️</span>설정·백업</a>
      <button class="nav-btn" data-action="toggleTheme"><span class="ico">🌓</span>테마: ${{auto:'자동',light:'밝게',dark:'어둡게'}[db.settings.theme||'auto']}</button>`;
   $('#bottom').innerHTML = NAV.map(([k,i]) => `<a class="nav-btn ${cur===k?'active':''}" href="#/${k}"><span class="ico">${i}</span>${NAV_SHORT[k]}</a>`).join('');
@@ -779,6 +788,7 @@ function route(){
   decorateEmpty(view);
   hydrateImages(view);
   if(page === 'patterns') regenThumbs();
+  setSyncState(gd.state);
   /* 프로젝트 화면(카운터 누르며 뜨는 중)에서도 화면 켜 두기 */
   if($('#viewer').hidden) keepAwake(page === 'project');
 }
@@ -816,6 +826,7 @@ function resumeCard(){
 function backupNotice(){
   const s = db.settings, DAY = 864e5, now = Date.now();
   if(s.backupSnooze && now < s.backupSnooze) return '';
+  if(s.gdOn) return '';
   const hasData = db.projects.length || db.patterns.length || db.yarns.length;
   if(!hasData) return '';
   const newPats = db.patterns.filter(p => p.fileId && p.backedUp !== p.fileId).length;
@@ -1580,8 +1591,8 @@ function viewPatterns(){
   const active = !!(ui.patCat || f.weight || f.level || f.method || f.tag || f.has || q);
   const sel = (key, label, opts) => `<select data-patf="${key}" class="fsel ${f[key] ? 'on' : ''}"><option value="">${label}</option>${opts.map(([v,l]) => `<option value="${esc(v)}" ${f[key]===v?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
   return `
-  <div class="page-head"><div><h1>도안 보관함</h1><p class="sub">PDF·사진 도안을 이 기기에 보관하고 바로 펼쳐 볼 수 있어요. 마지막으로 본 쪽도 기억해요.</p></div>
-    <button class="btn primary hide-mobile" data-action="editPattern">＋ 도안 추가</button></div>
+  <div class="page-head"><div><h1>도안 보관함</h1><p class="sub">PDF를 올리면 도안을 읽어 종류·굵기·태그를 자동으로 정리해요. 마지막으로 본 쪽도 기억해요.</p></div>
+    <div class="row"><button class="btn" data-action="bulkPick">📚 여러 개 한꺼번에</button><button class="btn primary hide-mobile" data-action="editPattern">＋ 도안 추가</button></div></div>
   ${db.patterns.length ? `<div class="toolbar"><input class="search" type="search" placeholder="도안 이름·디자이너·태그·메모 검색" value="${esc(ui.patSearch)}" data-bind="patSearch"></div>
     <div class="chips" style="margin-bottom:10px"><button class="chip ${!ui.patCat?'active':''}" data-action="patCat" data-v="">전체 ${db.patterns.length}</button>${cats.map(c => `<button class="chip ${ui.patCat===c?'active':''}" data-action="patCat" data-v="${esc(c)}">${esc(c)} ${count('category',c)}</button>`).join('')}</div>
     <div class="filters">
@@ -1617,6 +1628,172 @@ function patternCard(p){
       </div>
     </div></div>`;
 }
+/* ---------- 🔎 도안 자동 인식: PDF 글자를 읽어 이름·출처·종류·굵기·난이도·방식·태그 추측 ----------
+   인터넷 AI 없이 기기 안에서 낱말을 찾아 맞히는 방식이라, 결과는 꼭 한 번 확인해 주세요. */
+const isPatternFile = f => f && (f.type === 'application/pdf' || /\.pdf$/i.test(f.name) || (f.type || '').startsWith('image/'));
+const cleanName = s => s.replace(/\.[^.]+$/, '').replace(/[_]+/g, ' ').replace(/\s*[-–]\s*/g, ' - ').replace(/\s+/g, ' ').trim();
+const PAT_RULES = {
+  category: [
+    ['카디건', /카디건|가디건|자켓|재킷|cardigan|jacket/gi],
+    ['조끼', /조끼|베스트|\bvest\b|slipover|슬리포버/gi],
+    ['스웨터·풀오버', /스웨터|풀오버|니트\s?티|서머\s?톱|썸머\s?톱|\bsweater|pullover|jumper|\btee\b|summer\s?top|탑다운\s*니트|[가-힣]티$/gim],
+    ['모자', /모자|비니|버킷\s?햇|바라클라바|beanie|\bhats?\b|toque|beret|balaclava/gi],
+    ['목도리·숄', /목도리|머플러|숄|스카프|넥워머|\bscarf|shawl|cowl|\bwrap\b/gi],
+    ['양말', /양말|\bsocks?\b/gi],
+    ['장갑', /장갑|벙어리|손토시|mittens?|gloves?|wrist\s?warmers?/gi],
+    ['가방', /가방|파우치|토트|\bbags?\b|\btote\b|pouch/gi],
+    ['담요', /담요|블랭킷|blanket|afghan/gi],
+    ['인형·소품', /인형|아미구루미|키링|코스터|amigurumi|\btoy\b|coaster/gi],
+  ],
+  weight: [
+    ['6', /super\s?(bulky|chunky)|슈퍼\s?벌키|슈퍼\s?청키/gi],
+    ['7', /jumbo|점보사/gi],
+    ['5', /\b(bulky|chunky)\b|벌키|청키|12\s?ply/gi],
+    ['4', /worsted|aran\s*(weight|yarn)|워스티드|아란\s*(사|실|굵기)|10\s?ply/gi],
+    ['3', /\bdk\b|double\s?knit|8\s?ply/gi],
+    ['2', /sport\s*(weight|yarn)|\bsport\b|스포츠\s*(사|굵기)|5\s?ply/gi],
+    ['1', /fingering|sock\s*(weight|yarn)|핑거링|삭스\s*얀|4\s?ply/gi],
+    ['0', /lace\s*(weight|yarn)|레이스\s*(사|굵기|웨이트)|cobweb/gi],
+  ],
+  level: [
+    ['1', /초보|입문|왕초보|쉬운|beginner|easy|simple/gi],
+    ['3', /고급|상급|어려|advanced|experienced|expert/gi],
+    ['2', /중급|intermediate/gi],
+  ],
+  method: [
+    ['탑다운', /탑\s?다운|top[\s-]?down/gi],
+    ['바텀업', /바텀\s?업|bottom[\s-]?up/gi],
+    ['조각 떠서 잇기', /조각\s*(으로|을)?\s*떠|이어\s?붙|꿰매|seam(ed|ing)\b|pieces?\s*(are|then)\s*sewn/gi],
+    ['원통 뜨기', /원통|in the round|seamless|심리스|이음새\s*없/gi],
+    ['평면 뜨기', /평면\s*(으로)?\s*뜨|knit(ted)?\s*flat|worked\s*flat/gi],
+  ],
+  tags: [
+    ['꽈배기', /꽈배기|케이블|\bcables?\b/gi], ['래글런', /래글런|raglan/gi], ['요크', /요크|\byoke/gi],
+    ['배색', /배색|페어\s?아일|아가일|fair\s?isle|colou?rwork|stranded|argyle/gi], ['건지', /건지|guernsey|gansey/gi], ['여름옷', /서머|썸머|여름|summer|린넨|linen|코튼|cotton/gi], ['레이스무늬', /레이스\s*무늬|lace\s*(pattern|panel|chart)/gi],
+    ['아란무늬', /아란(?!\s*(사|실|굵기|웨이트))|aran\s*(pattern|sweater|cable|vest)/gi], ['브이넥', /브이\s?넥|[vV]\s?넥|v[\s-]?neck/gi],
+    ['라운드넥', /라운드\s?넥|crew\s?neck/gi], ['터틀넥', /터틀\s?넥|폴라|turtle\s?neck/gi], ['오버핏', /오버\s?핏|루즈\s?핏|oversized?/gi],
+    ['크롭', /크롭|cropped/gi], ['아이용', /아기|아동|유아|키즈|어린이|\bbaby\b|\bkids?\b|children/gi], ['남성용', /남성|남자|\bmen'?s\b/gi],
+    ['모헤어', /모헤어|mohair/gi], ['멍석뜨기', /멍석|seed\s?stitch|moss\s?stitch/gi], ['가터뜨기', /가터\s*(뜨기)?|garter/gi],
+    ['브리오슈', /브리오슈|브리오시|brioche/gi], ['인타샤', /인타샤|intarsia/gi], ['후드', /후드|\bhood/gi], ['포켓', /포켓|주머니|pockets?/gi],
+  ],
+};
+const countHits = (text, re) => (text.match(re) || []).length;
+function bestRule(rules, text, title){
+  let best = null, top = 0;
+  for(const [val, re] of rules){ const n = countHits(text, re) + countHits(title, re) * 6; if(n > top){ top = n; best = val; } }
+  return best;
+}
+/* 파일 이름 다듬기: 버전·언어 표시 떼고, NeedMoreSweater → Need More Sweater */
+function nameFromFile(fn){
+  let s = fn.replace(/\.[^.]+$/, '').replace(/[_]+/g, ' ');
+  s = s.replace(/\b(ver|v)\s?\.?\d+(\.\d+)*\b/gi, ' ').replace(/\b(kr|kor|korean|en|eng|english|final)\b/gi, ' ').replace(/(최종|한글판?|영문판?)/g, ' ');
+  s = s.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/\s+/g, ' ').replace(/[\s_.-]+$/, '').trim();
+  return s;
+}
+const genericName = s => !s || s.length < 2 || /^(pattern|patterns|도안|scan|scanned|download|untitled|document|문서|image|img|\d+)$/i.test(s.trim());
+/* 글자가 없거나 적어도 이름만으로 할 수 있는 추측 */
+function guessFromText(out, text, head){
+  out.category = out.category || bestRule(PAT_RULES.category, text, head) || '';
+  out.method = out.method || bestRule(PAT_RULES.method, text, head) || '';
+  if(!out.weight){ const w = PAT_RULES.weight.map(([v, re]) => [v, countHits(text, re) + countHits(head, re) * 6]).sort((a, b) => b[1] - a[1])[0]; if(w && w[1] >= 2) out.weight = w[0]; }
+  const tagHits = PAT_RULES.tags.map(([t, re]) => [t, countHits(text, re) + countHits(head, re) * 6]).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 6).map(x => x[0]);
+  out.tags = tagHits.join(', ');
+  /* 난이도: 도안에 써 있으면 그대로, 없으면 기법으로 짐작 */
+  out.level = bestRule(PAT_RULES.level, text, head) || '';
+  if(!out.level && (text.trim() || tagHits.length || out.category)){
+    out.level = tagHits.some(t => /배색|인타샤|브리오슈/.test(t)) ? '3'
+      : tagHits.some(t => /꽈배기|아란무늬|레이스무늬|건지/.test(t)) ? '2'
+      : /목도리|담요|모자/.test(out.category) ? '1' : '2';
+  }
+}
+async function analyzePattern(file){
+  const out = {name: nameFromFile(file.name), textFound: false, isImage: !/pdf/i.test(file.type) && !/\.pdf$/i.test(file.name)};
+  /* 사진·스캔본이라도 파일 이름으로 종류·태그는 짐작해요 */
+  const nameOnly = () => { guessFromText(out, '', out.name); return out; };
+  if(out.isImage) return nameOnly();
+  let text = '', title = '', author = '';
+  try{
+    const lib = await loadPdfJs();
+    const pdf = await lib.getDocument({data: new Uint8Array(await file.arrayBuffer())}).promise;
+    try{ const m = await pdf.getMetadata(); title = (m.info && m.info.Title) || ''; author = (m.info && m.info.Author) || ''; }catch(e){}
+    let bigLine = '', bigSize = 0;
+    for(let i = 1; i <= Math.min(pdf.numPages, 5); i++){
+      const tc = await (await pdf.getPage(i)).getTextContent();
+      /* 같은 줄끼리 묶기 */
+      const lines = new Map();
+      for(const it of tc.items){
+        if(!it.str || !it.str.trim()) continue;
+        const y = Math.round(it.transform[5]), size = Math.abs(it.transform[3]) || it.height || 0;
+        const L = lines.get(y) || {s: '', size: 0}; L.s += (L.s && !L.s.endsWith(' ') ? ' ' : '') + it.str; L.size = Math.max(L.size, size); lines.set(y, L);
+      }
+      const arr = [...lines.entries()].sort((a, b) => b[0] - a[0]).map(e => e[1]);
+      text += arr.map(l => l.s).join('\n') + '\n';
+      /* 첫 쪽에서 가장 큰 글씨 = 제목일 가능성 높음 */
+      if(i === 1) for(const l of arr){ const s = l.s.trim(); if(s.length >= 2 && s.length <= 50 && !/^[\d\s.,:/-]+$/.test(s) && l.size > bigSize){ bigSize = l.size; bigLine = s; } }
+    }
+    pdf.destroy();
+    out.textFound = text.replace(/\s/g, '').length > 30;
+    if(!out.textFound) return nameOnly();
+    /* 이름: 파일 이름이 뜻이 있으면 그대로(가장 정확), 아니면 PDF 정보 → 첫 쪽 큰 글씨 */
+    const badTitle = t => !t || t.length < 2 || t.length > 60 || /microsoft|untitled|제목\s*없음|\.(docx?|pdf|hwp)|^document|^슬라이드/i.test(t);
+    if(genericName(out.name) || /^[A-Za-z0-9 ]+$/.test(out.name) && !badTitle(title)) out.name = !badTitle(title) ? title.trim() : (bigLine || out.name);
+    /* 출처·디자이너: "~의 저작권은 OOO에게" → "Designed by OOO" → ⓒ OOO → 홈페이지 주소 */
+    const kc = text.match(/저작권은\s*(?:모두\s*)?([^\s,.()]{2,20}?)\s*(?:에게|에|님에게|님)\s/);
+    const dm = text.match(/(?:designed\s+by|design\s+by|pattern\s+by|designer\s*[:：]|디자이너\s*[:：]|디자인\s*[:：]|작가\s*[:：])\s*([^\n|,·:]{2,30})/i);
+    const cm = text.match(/(?:©|ⓒ|copyright\s*(?:©|ⓒ)?)\s*(?:\d{4}\s*[.,]?\s*)?([^\n|,·]{2,30})/i);
+    const site = text.match(/(?:www\.)?([a-z0-9-]{3,30})\.(?:co\.kr|com|kr|net|shop)\b/i);
+    const handle = text.match(/@([a-z0-9_.]{3,30})/i);
+    const badAuthor = a => !a || a.trim().length < 3 || /microsoft|adobe|user|admin|사용자|owner|windows|^lg$|^pc$/i.test(a);
+    const SITES = {banul: '바늘이야기', ravelry: 'Ravelry', etsy: 'Etsy', lovecrafts: 'LoveCrafts', 'knitting-cafe': '니팅카페'};
+    const okName = s => s && !/version|ver\.|page|쪽|\d+\.\d+|^\d/i.test(s.trim()) && s.trim().length >= 2;
+    const pick = [kc && kc[1], dm && dm[1], cm && cm[1], !badAuthor(author) && author, site && (SITES[site[1].toLowerCase()] || site[0].replace(/^www\./i, '')), handle && '@' + handle[1]].find(okName);
+    if(pick) out.designer = pick.replace(/all rights reserved.*/i, '').replace(/[.\s]+$/, '').trim().slice(0, 30);
+    const head = out.name + ' ' + bigLine;
+    /* 바늘 굵기·게이지 찾기 (실 굵기 추측에도 사용) */
+    const mm = [...text.matchAll(/(\d{1,2}(?:[.,]\d{1,2})?)\s*mm/gi)].map(m => parseFloat(m[1].replace(',', '.'))).filter(v => v >= 1.5 && v <= 25);
+    const needle = mm.length ? Object.entries(mm.reduce((a, v) => (a[v] = (a[v] || 0) + 1, a), {})).sort((a, b) => b[1] - a[1])[0][0] : '';
+    const gm = text.match(/(\d{1,2}(?:\.\d)?)\s*(?:코|sts?|stitches)\s*(?:[x×*,]|and|와|과|\/)?\s*(\d{1,2}(?:\.\d)?)\s*(?:단|rows?|rnds?|rounds?)/i);
+    guessFromText(out, text, head);
+    /* 실 굵기: 도안에 분명히 적혀 있지 않으면 게이지(10cm 코 수) → 바늘 굵기로 짐작 */
+    if(!out.weight && gm){ const s = +gm[1]; out.weight = s >= 27 ? '1' : s >= 24 ? '2' : s >= 21 ? '3' : s >= 16 ? '4' : s >= 12 ? '5' : s >= 7 ? '6' : '7'; }
+    if(!out.weight && needle){ const n = +needle; out.weight = n <= 2.75 ? '1' : n <= 3.5 ? '2' : n <= 4.5 ? '3' : n <= 5.5 ? '4' : n <= 8 ? '5' : n <= 12.75 ? '6' : '7'; }
+    const facts = [needle && `바늘 ${needle}mm`, gm && `게이지 ${gm[1]}코 × ${gm[2]}단`].filter(Boolean);
+    if(facts.length) out.notes = '📌 도안에서 찾은 정보: ' + facts.join(', ');
+  }catch(e){ console.warn('도안 자동 인식 실패:', e); if(!out.category) guessFromText(out, '', out.name); /* 읽기 실패 → 파일 이름으로만 */ }
+  return out;
+}
+/* 파일을 기기에 저장하고 미리보기·쪽수 만들기 (도안 추가·여러 개 올리기 공용) */
+async function attachPatternFile(rec, file){
+  const oldFile = rec.fileId;
+  rec.fileId = uid(); rec.fileName = file.name; rec.fileSize = file.size;
+  rec.fileType = file.type === 'application/pdf' || /\.pdf$/i.test(file.name) ? 'pdf' : 'image';
+  rec.lastPage = 1; rec.pages = 0; deleteImage(rec.thumb); rec.thumb = ''; rec.marker = null; rec.backedUp = '';
+  try{ await idb.put(rec.fileId, {blob: file, name: file.name, type: file.type}); }
+  catch(e){ toast('파일을 저장하지 못했어요. 저장 공간을 확인해 주세요.'); return false; }
+  if(oldFile) idb.del(oldFile);
+  if(navigator.storage && navigator.storage.persist) navigator.storage.persist();
+  try{
+    if(rec.fileType === 'pdf'){ const info = await pdfInfo(file); rec.pages = info.pages; rec.thumb = await storeImage(info.thumb); }
+    else rec.thumb = await storeImage(await shrinkImage(file, 360));
+  }catch(e){ /* 미리보기 실패해도 파일은 저장됨 */ }
+  return true;
+}
+/* 여러 도안 한꺼번에 올리기 (자동 인식 포함) */
+async function bulkAddPatterns(files){
+  files = [...files].filter(isPatternFile);
+  if(!files.length) return toast('PDF나 사진 파일만 올릴 수 있어요');
+  const added = [];
+  for(const [i, f] of files.entries()){
+    toast(`도안 읽는 중… (${i + 1}/${files.length}) ${f.name}`);
+    const info = await analyzePattern(f);
+    const rec = {id: uid(), created: Date.now(), name: info.name, designer: info.designer || '', category: info.category || '', weight: info.weight || '', level: info.level || '', method: info.method || '', tags: info.tags || '', notes: info.notes || '', url: ''};
+    if(!(await attachPatternFile(rec, f))) break;
+    db.patterns.push(rec); added.push(rec); save();
+  }
+  refresh();
+  if(added.length) cheer(`도안 ${added.length}개를 보관했어! 종류·태그가 맞는지 한 번 봐 줘`);
+}
+
 function editPattern(id){
   const p = id ? byId('patterns', id) : null;
   let file = null;
@@ -1624,7 +1801,7 @@ function editPattern(id){
     {type:'html', html:`<div class="field full"><label>도안 파일 (PDF 또는 사진)</label>
       <label class="drop" id="patDrop"><input type="file" accept="application/pdf,image/*" id="patFile" hidden>
         <span id="patFileTxt">${p && p.fileId ? `📄 ${esc(p.fileName || '저장된 파일')} · ${fmtSize(p.fileSize||0)} <span class="muted">(누르면 다른 파일로 바꿔요)</span>` : '📂 눌러서 파일 선택 또는 여기로 끌어다 놓기'}</span></label>
-      <span class="hint">파일은 이 기기 브라우저 안에만 보관돼요. 다른 기기로 옮기려면 설정의 백업을 이용하세요.</span></div>`},
+      <span class="hint">✨ PDF를 고르면 도안을 읽어서 이름·출처·종류·실 굵기·난이도·뜨는 방식·태그를 자동으로 채워요.</span></div>`},
     {key:'name', label:'도안 이름', required:true, full:true, placeholder:'파일을 고르면 자동으로 채워져요'},
     {key:'designer', label:'디자이너·출처', placeholder:'예: ○○ 니트 공방'},
     {key:'category', label:'종류', type:'select', options:[['','— 선택 —'], ...PATTERN_CATS.map(c => [c,c])]},
@@ -1637,32 +1814,28 @@ function editPattern(id){
   ], p || {}, async vals => {
     const rec = p || {id: uid(), created: Date.now()};
     Object.assign(rec, vals);
-    if(file){
-      toast('도안을 저장하는 중…');
-      const oldFile = rec.fileId;
-      rec.fileId = uid(); rec.fileName = file.name; rec.fileSize = file.size;
-      rec.fileType = file.type === 'application/pdf' || /\.pdf$/i.test(file.name) ? 'pdf' : 'image';
-      rec.lastPage = 1; rec.pages = 0; deleteImage(rec.thumb); rec.thumb = ''; rec.marker = null; rec.backedUp = '';
-      try{ await idb.put(rec.fileId, {blob: file, name: file.name, type: file.type}); }
-      catch(e){ toast('파일을 저장하지 못했어요. 저장 공간을 확인해 주세요.'); return; }
-      if(oldFile) idb.del(oldFile);
-      if(navigator.storage && navigator.storage.persist) navigator.storage.persist();
-      try{
-        if(rec.fileType === 'pdf'){ const info = await pdfInfo(file); rec.pages = info.pages; rec.thumb = await storeImage(info.thumb); }
-        else rec.thumb = await storeImage(await shrinkImage(file, 360));
-      }catch(e){ /* 미리보기 실패해도 파일은 저장됨 (오프라인 등) */ }
-    }
+    if(file){ toast('도안을 저장하는 중…'); if(!(await attachPatternFile(rec, file))) return; }
     if(!p) db.patterns.push(rec);
     save(); toast(p ? '수정했어요' : '도안을 보관했어요 📖'); refresh();
   });
   const inp = $('#patFile'), drop = $('#patDrop');
-  const pick = f => {
+  const pick = async f => {
     if(!f) return;
-    if(!(f.type === 'application/pdf' || /\.pdf$/i.test(f.name) || f.type.startsWith('image/'))) return toast('PDF나 사진 파일만 올릴 수 있어요');
+    if(!isPatternFile(f)) return toast('PDF나 사진 파일만 올릴 수 있어요');
     file = f;
-    $('#patFileTxt').innerHTML = `✅ ${esc(f.name)} · ${fmtSize(f.size)}`;
-    const nameEl = $('#theForm').elements.name;
-    if(!nameEl.value.trim()) nameEl.value = f.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ');
+    $('#patFileTxt').innerHTML = `✅ ${esc(f.name)} · ${fmtSize(f.size)} <span class="muted">· 🔎 도안을 읽는 중…</span>`;
+    const form = $('#theForm');
+    const info = await analyzePattern(f);
+    if(file !== f || !form.isConnected) return;
+    /* 비어 있는 칸만 채우고, 채운 칸은 노랗게 표시 */
+    const filled = [];
+    for(const k of ['name','designer','category','weight','level','method','tags','notes']){
+      const el = form.elements[k]; if(!el || !info[k] || String(el.value).trim()) continue;
+      el.value = info[k]; el.classList.add('autofilled'); filled.push(k);
+    }
+    $('#patFileTxt').innerHTML = `✅ ${esc(f.name)} · ${fmtSize(f.size)}` + (info.textFound
+      ? `<br><span class="small" style="color:var(--accent)">✨ 도안을 읽고 ${filled.length}개 칸을 채웠어요. 노란 칸이 맞는지 확인해 주세요.</span>`
+      : `<br><span class="small muted">${info.isImage ? '사진 도안은 글자를 읽을 수 없어서 이름만 채웠어요.' : '글자를 읽을 수 없는 PDF(스캔본)라 이름만 채웠어요.'}</span>`);
   };
   inp.addEventListener('change', () => pick(inp.files[0]));
   drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
@@ -1674,8 +1847,9 @@ function editPattern(id){
 const vw = {pdf:null, pattern:null, projectId:null, zoom:1, url:null, observer:null, saveT:null, cur:1};
 async function openViewer(patternId, projectId){
   const p = byId('patterns', patternId); if(!p || !p.fileId) return;
-  const rec = await idb.get(p.fileId).catch(() => null);
-  if(!rec){ toast('이 기기에 도안 파일이 없어요. 백업에서 불러오거나 파일을 다시 올려 주세요.'); return; }
+  let rec = await idb.get(p.fileId).catch(() => null);
+  if(!rec && db.settings.gdOn){ try{ rec = await gdFetchPattern(p); }catch(e){ rec = null; } }
+  if(!rec){ toast(db.settings.gdOn ? '드라이브에서 도안을 받지 못했어요. 인터넷 연결을 확인하거나 도안을 올린 기기에서 먼저 동기화해 주세요.' : '이 기기에 도안 파일이 없어요. 백업에서 불러오거나 파일을 다시 올려 주세요.'); return; }
   Object.assign(vw, {pattern: p, projectId: projectId || null, zoom: 1, cur: p.lastPage || 1});
   if(vw.url) URL.revokeObjectURL(vw.url);
   vw.url = URL.createObjectURL(rec.blob.type ? rec.blob : new Blob([rec.blob], {type: rec.type || 'application/pdf'}));
@@ -1963,8 +2137,21 @@ window.addEventListener('resize', () => { if(!$('#viewer').hidden && vw.pdf){ cl
 function viewSettings(){
   let size = 0; try{ size = (localStorage.getItem(KEY) || '').length; }catch(e){}
   return `
-  <div class="page-head"><div><h1>설정·백업</h1><p class="sub">모든 데이터는 이 브라우저에만 저장돼요. 기기를 바꾸거나 브라우저 기록을 지우기 전에 꼭 백업해 주세요.</p></div></div>
+  <div class="page-head"><div><h1>설정·백업</h1><p class="sub">${db.settings.gdOn ? '구글 드라이브와 동기화 중이에요. 그래도 가끔 백업 파일을 받아 두면 더 안전해요.' : '지금은 이 기기에만 저장돼요. 구글 드라이브에 연결하면 모든 기기에서 같은 기록을 볼 수 있어요.'}</p></div></div>
   <div class="grid cols-2">
+    <div class="card tape"><h2>☁️ 구글 드라이브 동기화</h2>
+      ${db.settings.gdOn ? `<p class="small" id="gdStatus" style="margin-top:0">${gdStatusText()}</p>
+        <p class="small muted">기록·사진·도안이 내 구글 드라이브의 <b>뜨개노트</b> 폴더에 저장되고, 같은 구글 계정으로 연결한 모든 기기가 자동으로 맞춰져요.</p>
+        <div class="row">
+          ${gd.state === 'reauth' ? '<button class="btn primary" data-action="syncTap">다시 연결</button>' : '<button class="btn primary" data-action="syncTap">지금 동기화</button>'}
+          <button class="btn" data-action="gdFetchAll">📥 도안 모두 이 기기에 받기</button>
+          <button class="btn ghost danger" data-action="gdDisconnect">연결 해제</button>
+        </div>
+        <p class="small muted" style="margin-bottom:0">도안 PDF는 처음 열 때 드라이브에서 받아 와요. 인터넷 없이 보려면 「도안 모두 받기」를 눌러 두세요.</p>`
+      : `<p class="small muted" style="margin-top:0">PC·태블릿·휴대폰 어디서든 같은 기록을 보려면 구글 드라이브에 연결하세요. 이 앱이 만든 <b>뜨개노트</b> 폴더만 사용하고, 드라이브의 다른 파일은 볼 수 없어요.</p>
+        <button class="btn primary" data-action="gdConnect">구글 드라이브 연결</button>
+        <p class="small muted" style="margin-bottom:0">처음 연결할 때 이 기기의 기록이 드라이브로 올라가요. 다른 기기에서도 같은 구글 계정으로 연결하면 기록이 합쳐져요.</p>`}
+    </div>
     <div class="card"><h2>💾 백업과 복원</h2>
       <p class="small muted">백업은 <b>기록</b>과 <b>도안 PDF</b>를 따로 저장해요. 다른 기기에서는 두 종류 파일을 한꺼번에 골라 불러오면 돼요.</p>
       <div class="bk-row"><div><b>① 기록</b><div class="small muted">프로젝트·실·바늘·게이지·사진 · ${db.settings.lastRecordBackup ? '마지막 ' + new Date(db.settings.lastRecordBackup).toLocaleDateString('ko-KR') : '아직 안 함'}</div></div>
@@ -2182,11 +2369,19 @@ const actions = {
     toast(`도안 ${n}개를 백업했어요`);
   },
   importData: () => $('#importFile').click(),
-  wipe: async () => { if(confirm('정말 모든 데이터를 삭제할까요? 보관한 도안 파일도 모두 지워지고 되돌릴 수 없어요.')){ db = blank(); save(); await idb.clear().catch(() => {}); applyTheme(); toast('모두 삭제했어요'); location.hash = '#/home'; refresh(); } },
+  wipe: async () => { if(confirm(db.settings.gdOn ? '정말 모든 데이터를 삭제할까요?\n구글 드라이브와 연결된 다른 기기에서도 모두 지워져요. 되돌릴 수 없어요.' : '정말 모든 데이터를 삭제할까요? 보관한 도안 파일도 모두 지워지고 되돌릴 수 없어요.')){ db = blank(); save(); await idb.clear().catch(() => {}); applyTheme(); toast('모두 삭제했어요'); location.hash = '#/home'; refresh(); } },
   editPattern: d => editPattern(d.id),
+  gdConnect: () => gdConnect(),
+  gdDisconnect: () => gdDisconnect(),
+  gdFetchAll: () => gdFetchAllPatterns(),
+  syncTap: async () => { if(gd.state === 'reauth' || !tokenValid()){ try{ await gdAuth(''); }catch(e){ return toast('다시 연결하지 못했어요. 팝업이 막혔다면 허용해 주세요.'); } } syncNow(true); },
   projectFromPattern: d => { const pt = byId('patterns', d.id); editProject(null, {patternId: pt.id, name: pt.name}); },
   openPattern: d => openViewer(d.id, d.pid),
   patCat: d => { ui.patCat = d.v; refresh(); },
+  bulkPick: () => {
+    const inp = document.createElement('input'); inp.type = 'file'; inp.multiple = true; inp.accept = 'application/pdf,image/*';
+    inp.onchange = () => bulkAddPatterns(inp.files); inp.click();
+  },
   partTpl: d => { const p = byId('projects', d.pid); setParts(p, PART_TEMPLATES[d.tpl]); toast('부분을 나눴어요. 지금 뜨는 부분을 눌러 골라 주세요'); },
   editParts: d => {
     const p = byId('projects', d.pid);
@@ -2379,6 +2574,257 @@ function loadSample(){
   save();
 }
 
+/* ============ ☁️ 구글 드라이브 동기화 ============
+   - 내 구글 드라이브의 '뜨개노트' 폴더에 기록(JSON)·사진·도안 파일을 저장해요.
+   - 권한은 drive.file : 이 앱이 만든 파일만 볼 수 있어요 (다른 드라이브 파일은 못 봐요).
+   - 항목마다 마지막 수정 시각(_u)을 비교해서, 더 나중에 고친 쪽으로 합쳐요.
+   - 지운 항목은 '지운 기록(tombs)'으로 남겨 다른 기기에서도 지워지게 해요. */
+const GD_CLIENT_ID = '180386550892-hre935basfu92vsia7t5072ttu5a1lp5.apps.googleusercontent.com';
+const GD_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+const GD_FOLDER = '뜨개노트';
+const GD_DATA = 'knit-notes-data.json';
+const SYNC_COLLS = ['projects','patterns','gauges','yarns','needles'];
+const gd = { token: null, exp: 0, client: null, folderId: null, dataId: null, remoteMod: null, blobs: null, busy: false, again: false, state: 'off', last: 0, err: '' };
+
+/* ---- 변경 추적: save() 때마다 무엇이 바뀌었는지 비교해서 _u(수정 시각)를 찍어요 ---- */
+let snap = null;
+function recJson(r){ const {_u, thumb, ...rest} = r; return JSON.stringify(rest); }
+function takeSnap(){ snap = new Map(); SYNC_COLLS.forEach(c => db[c].forEach(r => snap.set(c + ':' + r.id, recJson(r)))); }
+function stampChanges(){
+  if(!snap){ takeSnap(); return; }
+  const now = Date.now(), seen = new Set();
+  db.tombs = db.tombs || {};
+  SYNC_COLLS.forEach(c => db[c].forEach(r => {
+    const k = c + ':' + r.id, j = recJson(r); seen.add(k);
+    if(snap.get(k) !== j){ r._u = now; snap.set(k, j); delete db.tombs[k]; }
+  }));
+  for(const k of [...snap.keys()]) if(!seen.has(k)){ db.tombs[k] = now; snap.delete(k); }
+}
+
+/* ---- 합치기 ---- */
+function mergeRemote(remote){
+  const tombs = {...(remote.tombs || {})};
+  for(const [k, t] of Object.entries(db.tombs || {})) tombs[k] = Math.max(tombs[k] || 0, t);
+  /* 60일 지난 지운 기록은 정리 */
+  const old = Date.now() - 60 * 864e5; for(const k in tombs) if(tombs[k] < old) delete tombs[k];
+  let local = false, remoteDirty = JSON.stringify(tombs) !== JSON.stringify(remote.tombs || {});
+  SYNC_COLLS.forEach(c => {
+    const Lm = new Map(db[c].map(r => [r.id, r])), Rm = new Map((remote[c] || []).map(r => [r.id, r]));
+    const order = [...Lm.keys(), ...[...Rm.keys()].filter(id => !Lm.has(id))];
+    const out = [];
+    for(const id of order){
+      const l = Lm.get(id), r = Rm.get(id), t = tombs[c + ':' + id] || 0;
+      let w = !l ? r : !r ? l : ((r._u || 0) > (l._u || 0) ? r : l);
+      if((w._u || 0) <= t && t){ if(l) local = true; if(r) remoteDirty = true; continue; }
+      const same = l && r && recJson(l) === recJson(r);
+      if(w === r && !same) local = true;
+      if(w === l && !same) remoteDirty = true;
+      if(c === 'patterns') w = {...w, thumb: l ? l.thumb : ''};   /* 미리보기는 기기마다 따로 */
+      out.push(w);
+    }
+    db[c] = out;
+  });
+  db.tombs = tombs;
+  return {local, remote: remoteDirty};
+}
+function syncPayload(){
+  const out = {v: 1, saved: Date.now(), tombs: db.tombs || {}};
+  SYNC_COLLS.forEach(c => out[c] = db[c].map(r => { const {thumb, ...rest} = r; return rest; }));
+  return out;
+}
+
+/* ---- 구글 로그인 (Google Identity Services 토큰 방식) ---- */
+let gisReady = null;
+function loadGis(){
+  if(!gisReady) gisReady = loadScript('https://accounts.google.com/gsi/client').then(() => {
+    gd.client = google.accounts.oauth2.initTokenClient({client_id: GD_CLIENT_ID, scope: GD_SCOPE, callback: () => {}});
+  }).catch(e => { gisReady = null; throw e; });
+  return gisReady;
+}
+function tokenValid(){ return gd.token && Date.now() < gd.exp - 60000; }
+(function restoreToken(){ try{ const t = JSON.parse(localStorage.getItem('knit-gd-token') || 'null'); if(t && t.exp > Date.now()){ gd.token = t.token; gd.exp = t.exp; } }catch(e){} })();
+async function gdAuth(prompt){
+  await loadGis();
+  return new Promise((res, rej) => {
+    gd.client.callback = r => {
+      if(r.error){ rej(r); return; }
+      gd.token = r.access_token; gd.exp = Date.now() + (r.expires_in || 3600) * 1000;
+      try{ localStorage.setItem('knit-gd-token', JSON.stringify({token: gd.token, exp: gd.exp})); }catch(e){}
+      res(gd.token);
+    };
+    gd.client.error_callback = e => rej(e);
+    gd.client.requestAccessToken({prompt});
+  });
+}
+async function gdApi(url, opt = {}){
+  if(!tokenValid()) throw Object.assign(new Error('reauth'), {reauth: true});
+  const r = await fetch(url.startsWith('http') ? url : 'https://www.googleapis.com/drive/v3/' + url, {...opt, headers: {...(opt.headers || {}), Authorization: 'Bearer ' + gd.token}});
+  if(r.status === 401){ gd.token = null; throw Object.assign(new Error('reauth'), {reauth: true}); }
+  if(!r.ok) throw new Error('Drive ' + r.status + ' ' + (await r.text()).slice(0, 200));
+  return r;
+}
+const q = s => encodeURIComponent(s);
+
+/* ---- 드라이브 파일 다루기 ---- */
+async function gdFolder(){
+  if(gd.folderId) return gd.folderId;
+  const r = await (await gdApi(`files?q=${q(`name='${GD_FOLDER}' and mimeType='application/vnd.google-apps.folder' and trashed=false`)}&fields=files(id)&spaces=drive`)).json();
+  if(r.files.length) return gd.folderId = r.files[0].id;
+  const c = await (await gdApi('files?fields=id', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name: GD_FOLDER, mimeType: 'application/vnd.google-apps.folder'})})).json();
+  return gd.folderId = c.id;
+}
+async function gdList(){
+  const folder = await gdFolder(), all = []; let page = '';
+  do{
+    const r = await (await gdApi(`files?q=${q(`'${folder}' in parents and trashed=false`)}&fields=nextPageToken,files(id,name,modifiedTime,appProperties,size)&pageSize=1000${page ? '&pageToken=' + page : ''}`)).json();
+    all.push(...r.files); page = r.nextPageToken || '';
+  }while(page);
+  gd.blobs = new Map(); gd.dataId = null;
+  for(const f of all){
+    if(f.name === GD_DATA){ gd.dataId = f.id; gd.dataMod = f.modifiedTime; }
+    else if(f.appProperties && f.appProperties.kid) gd.blobs.set(f.appProperties.kid, f);
+  }
+}
+async function gdUpload(blob, name, kid, existingId){
+  const meta = existingId ? {} : {name, parents: [await gdFolder()], appProperties: kid ? {kid} : undefined};
+  const start = await gdApi(`https://www.googleapis.com/upload/drive/v3/files${existingId ? '/' + existingId : ''}?uploadType=resumable&fields=id,modifiedTime`, {
+    method: existingId ? 'PATCH' : 'POST', headers: {'Content-Type': 'application/json; charset=UTF-8', 'X-Upload-Content-Type': blob.type || 'application/octet-stream'}, body: JSON.stringify(meta)});
+  const loc = start.headers.get('Location');
+  const r = await fetch(loc, {method: 'PUT', headers: {'Content-Type': blob.type || 'application/octet-stream'}, body: blob});
+  if(!r.ok) throw new Error('upload ' + r.status);
+  return r.json();
+}
+async function gdDownload(id){ return (await gdApi(`files/${id}?alt=media`)).blob(); }
+
+/* ---- 동기화 한 번 ---- */
+async function syncNow(manual){
+  if(!db.settings.gdOn || !GD_CLIENT_ID.includes('.apps.')) return;
+  if(gd.busy){ gd.again = true; return; }
+  if(!tokenValid()){ setSyncState('reauth'); return; }
+  gd.busy = true; setSyncState('sync');
+  try{
+    await gdList();
+    /* 1) 받아서 합치기 */
+    let changedLocal = false, pushJson = !gd.dataId;
+    if(gd.dataId){
+      const remote = await (await gdApi(`files/${gd.dataId}?alt=media`)).json();
+      const m = mergeRemote(remote);
+      changedLocal = m.local; pushJson = m.remote;
+      if(changedLocal){ persistLocal(); takeSnap(); afterRemoteChange(); }
+    }
+    /* 2) 이 기기에만 있는 도안·사진 올리기 */
+    const kids = new Set();
+    for(const p of db.patterns) if(p.fileId){
+      kids.add(p.fileId);
+      if(!gd.blobs.has(p.fileId)){
+        const rec = await idb.get(p.fileId).catch(() => null);
+        if(rec){ setSyncState('sync', `도안 올리는 중: ${p.name}`); const f = await gdUpload(rec.blob.type ? rec.blob : new Blob([rec.blob], {type: rec.type}), `도안_${p.name}_${p.fileId}${p.fileType === 'pdf' ? '.pdf' : '.jpg'}`, p.fileId); gd.blobs.set(p.fileId, {id: f.id, modifiedTime: f.modifiedTime}); }
+      }
+    }
+    for(const p of db.projects) if(isRef(p.photo)){
+      const k = 'img:' + p.photo.slice(4); kids.add(k);
+      if(!gd.blobs.has(k)){
+        const r = await idb.get(k).catch(() => null);
+        if(r){ const f = await gdUpload(await dataURLToBlob(r.data), `사진_${p.name}_${p.photo.slice(4)}.jpg`, k); gd.blobs.set(k, {id: f.id, modifiedTime: f.modifiedTime}); }
+        else if(gd.blobs.has(k)){ /* 아래에서 받음 */ }
+      }
+    }
+    /* 3) 다른 기기에서 온 사진 받기 (작아서 바로 받아요) */
+    for(const p of db.projects) if(isRef(p.photo)){
+      const id = p.photo.slice(4), k = 'img:' + id;
+      if(!(await idb.get(k).catch(() => null)) && gd.blobs.has(k)){
+        const b = await gdDownload(gd.blobs.get(k).id); const data = await blobToDataURL(b);
+        await idb.put(k, {data}); imgCache.set(id, data); changedLocal = true;
+      }
+    }
+    /* 4) 기록 올리기 */
+    if(pushJson){
+      const blob = new Blob([JSON.stringify(syncPayload())], {type: 'application/json'});
+      const f = await gdUpload(blob, GD_DATA, null, gd.dataId); gd.dataId = f.id;
+    }
+    /* 5) 어디에도 안 쓰이는 파일은 하루 지나면 휴지통으로 (복구 가능) */
+    const dayAgo = Date.now() - 864e5;
+    for(const [k, f] of gd.blobs) if(!kids.has(k) && f.modifiedTime && Date.parse(f.modifiedTime) < dayAgo){
+      await gdApi(`files/${f.id}`, {method: 'PATCH', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({trashed: true})}).catch(() => {});
+    }
+    gd.last = Date.now(); db.settings.gdLast = gd.last; persistLocal();
+    setSyncState('ok');
+    if(changedLocal && location.hash.startsWith('#/patterns')) regenThumbs();
+    if(manual) toast('동기화했어요 ☁️');
+  }catch(e){
+    if(e.reauth) setSyncState('reauth');
+    else { gd.err = String(e.message || e); setSyncState('error'); if(manual) toast('동기화하지 못했어요. 인터넷 연결을 확인해 주세요.'); }
+  }finally{
+    gd.busy = false;
+    if(gd.again){ gd.again = false; setTimeout(() => syncNow(), 500); }
+  }
+}
+/* 다른 기기에서 바뀐 내용이 들어오면 화면 갱신 (입력 중이면 잠시 미룸) */
+function afterRemoteChange(){
+  if($('#dlg').open || ['INPUT','TEXTAREA'].includes(document.activeElement && document.activeElement.tagName)){ gd.pendingRefresh = true; return; }
+  if(!$('#viewer').hidden){ renderViewerCounter(); return; }
+  refresh();
+}
+let syncT = null;
+function scheduleSync(){ if(!db.settings.gdOn) return; clearTimeout(syncT); syncT = setTimeout(() => syncNow(), 3000); }
+setInterval(() => { if(db.settings.gdOn && !document.hidden && tokenValid()) syncNow(); if(gd.pendingRefresh && !$('#dlg').open){ gd.pendingRefresh = false; afterRemoteChange(); } }, 45000);
+document.addEventListener('visibilitychange', () => { if(!document.hidden && db.settings.gdOn) syncNow(); });
+
+/* ---- 상태 표시 (위쪽 구름 아이콘) ---- */
+function setSyncState(s, msg){
+  gd.state = s;
+  const el = $('#syncBtn'); if(!el) return;
+  const map = {off: ['', ''], ok: ['☁️', '동기화됨'], sync: ['🔄', msg || '동기화 중…'], reauth: ['⚠️', '눌러서 구글 드라이브 다시 연결'], error: ['⚠️', '동기화 오류 · 눌러서 다시 시도']};
+  const [ico, tip] = map[s] || map.off;
+  const si = $('#syncIcoSide'), stx = $('#syncTxtSide'); if(si){ si.textContent = ico; stx.textContent = tip; }
+  el.hidden = !db.settings.gdOn; el.textContent = ico; el.title = tip; el.classList.toggle('spin', s === 'sync'); el.classList.toggle('warn', s === 'reauth' || s === 'error');
+  const st = $('#gdStatus'); if(st) st.innerHTML = gdStatusText();
+}
+function gdStatusText(){
+  if(gd.state === 'reauth') return '⚠️ 연결이 잠시 끊겼어요. <b>다시 연결</b>을 눌러 주세요.';
+  if(gd.state === 'sync') return '🔄 동기화하는 중…';
+  if(gd.state === 'error') return '⚠️ 동기화 오류: ' + esc(gd.err.slice(0, 80));
+  const t = gd.last || db.settings.gdLast;
+  return t ? `✅ 마지막 동기화: ${new Date(t).toLocaleString('ko-KR', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'})}` : '아직 동기화 전이에요';
+}
+async function gdConnect(){
+  if(!GD_CLIENT_ID.includes('.apps.')) return toast('구글 드라이브 연결 준비가 아직 안 됐어요');
+  try{
+    await gdAuth(db.settings.gdOn ? '' : 'consent');
+    db.settings.gdOn = true; persistLocal();
+    if(navigator.storage && navigator.storage.persist) navigator.storage.persist();
+    refresh(); toast('구글 드라이브에 연결했어요. 동기화를 시작해요 ☁️');
+    await syncNow(true);
+  }catch(e){ toast('연결하지 못했어요. 팝업이 막혔다면 허용해 주세요.'); }
+}
+function gdDisconnect(){
+  if(!confirm('구글 드라이브 연결을 해제할까요?\n이 기기의 기록과 드라이브의 파일은 그대로 남아요. 다시 연결하면 이어서 동기화돼요.')) return;
+  try{ if(gd.token && window.google) google.accounts.oauth2.revoke(gd.token, () => {}); }catch(e){}
+  gd.token = null; gd.folderId = null; db.settings.gdOn = false; persistLocal();
+  try{ localStorage.removeItem('knit-gd-token'); }catch(e){}
+  setSyncState('off'); refresh(); toast('연결을 해제했어요');
+}
+/* 이 기기에 없는 도안 파일을 드라이브에서 받기 */
+async function gdFetchPattern(p){
+  if(!db.settings.gdOn) return null;
+  if(!tokenValid()) await gdAuth('');
+  if(!gd.blobs) await gdList();
+  const f = gd.blobs.get(p.fileId); if(!f) return null;
+  toast('구글 드라이브에서 도안을 받는 중… ☁️');
+  const blob = await gdDownload(f.id);
+  const rec = {blob, name: p.fileName, type: blob.type || (p.fileType === 'pdf' ? 'application/pdf' : 'image/jpeg')};
+  await idb.put(p.fileId, rec);
+  return rec;
+}
+async function gdFetchAllPatterns(){
+  const missing = [];
+  for(const p of db.patterns) if(p.fileId && !(await idb.get(p.fileId).catch(() => null))) missing.push(p);
+  if(!missing.length) return toast('모든 도안이 이미 이 기기에 있어요 👍');
+  let n = 0;
+  for(const p of missing){ try{ toast(`도안 받는 중… (${n + 1}/${missing.length})`); if(await gdFetchPattern(p)) n++; }catch(e){ break; } }
+  toast(`도안 ${n}개를 이 기기에 받았어요. 이제 인터넷 없이도 볼 수 있어요`); refresh();
+}
+
 /* ============ 설치형 웹앱 (PWA) ============ */
 let deferredInstall = null, swReady = false;
 function isStandalone(){ return matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches || navigator.standalone === true; }
@@ -2399,8 +2845,11 @@ if('serviceWorker' in navigator && (location.protocol === 'https:' || location.h
 if(navigator.storage && navigator.storage.persist && isStandalone()) navigator.storage.persist();
 
 $('.topbar .brand').innerHTML = mascot('happy', 32) + ' 뜨개 노트';
+takeSnap();
 route();
 migrateImages();
+setSyncState(db.settings.gdOn ? (tokenValid() ? 'ok' : 'reauth') : 'off');
+if(db.settings.gdOn && tokenValid()) syncNow();
 </script>
 </body>
 </html>
