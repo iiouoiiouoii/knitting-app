@@ -1,6 +1,6 @@
 /* 뜨개 노트 서비스 워커: 앱과 PDF 뷰어를 기기에 저장해 인터넷 없이도 열리게 해요.
    앱 파일을 고치면 아래 VERSION 숫자를 올려 주세요. */
-const VERSION = 'v8';
+const VERSION = 'v9';
 const APP = 'knit-app-' + VERSION;
 const CDN = 'knit-cdn-v1';
 const APP_FILES = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png'];
